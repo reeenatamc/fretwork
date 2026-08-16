@@ -130,13 +130,28 @@ button:focus-visible {
   outline-offset: 1px;
 }
 
+/* La barra cabe en una fila a 1280 px: si se parte en dos, roba alto a la partitura y a
+   la rejilla de escritura, que es donde de verdad hace falta. */
 .title-input {
   font-family: var(--font-display);
   font-size: 15px;
-  min-width: 200px;
+  flex: 1 1 160px;
+  min-width: 120px;
+}
+#artist {
+  flex: 1 1 120px;
+  min-width: 90px;
 }
 .narrow {
-  min-width: 68px;
+  width: 62px;
+  min-width: 62px;
+}
+#instrument {
+  max-width: 130px;
+}
+#library {
+  flex: 0 1 200px;
+  min-width: 110px;
 }
 .unit {
   color: var(--ink-soft);
