@@ -1,0 +1,71 @@
+[workspace]
+members = [".", "crates/tabs-core"]
+resolver = "2"
+
+# Versiones compartidas por todos los crates del workspace.
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Lints comunes. Se heredan con `[lints] workspace = true`.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+# El motor de dificultad hace mucha aritmética con f32; estos lints estorban más de lo que ayudan.
+cast_precision_loss = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+module_name_repetitions = "allow"
+# La documentación va en prosa española y está llena de nombres propios
+# (AlphaTex, alphaTab, YouTube) que clippy confunde con identificadores.
+doc_markdown = "allow"
+# El modelo de partitura tiene banderas de sobra por naturaleza: repeticiones,
+# anacrusa, doble barra… agruparlas en enums no aclararía nada.
+struct_excessive_bools = "allow"
+# Reglas que sí queremos duras.
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+todo = "warn"
+
+[package]
+name = "tabs-repo"
+version = "0.1.0"
+description = "Capturador, repositorio e impresor de tablaturas de guitarra"
+license = "MIT"
+repository = "https://github.com/reeenatamc/tabs-repo"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "tabs_repo_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[lints]
+workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+tabs-core = { path = "crates/tabs-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = "0.4"
+tauri = { version = "2.11.3", features = [] }
+tauri-plugin-log = "2"
+
+[profile.release]
+# Binario más pequeño y rápido; el arranque de la app se nota.
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

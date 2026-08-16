@@ -1,0 +1,29 @@
+# Dependencias y compilación
+node_modules/
+dist/
+src-tauri/target/
+
+# El plugin de alphaTab copia aquí la tipografía Bravura y el soundfont desde
+# node_modules en cada build. Son ~2,7 MB regenerables: no tienen que vivir en git.
+public/font/
+public/soundfont/
+
+# ── Frontera de privacidad ───────────────────────────────────────────────
+# Las tablaturas (songs/*.json) SÍ se publican: son el aporte a otra gente.
+# El progreso NO sale nunca de esta máquina: BPMs, trabas, bitácora de práctica.
+tabs.db
+tabs.db-shm
+tabs.db-wal
+*.sqlite
+*.sqlite3
+
+# Credenciales
+.env
+.env.local
+*.key
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
