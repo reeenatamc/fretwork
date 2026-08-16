@@ -27,3 +27,6 @@ tabs.db-wal
 Thumbs.db
 .vscode/
 .idea/
+
+# La autocomprobación deja aquí una canción de prueba; no es una tablatura de verdad.
+songs/prueba-de-guardado.json
