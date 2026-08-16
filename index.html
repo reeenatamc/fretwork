@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tabs-repo</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="toolbar">
+        <input id="title" class="title-input" value="Sin título" spellcheck="false" />
+        <input id="artist" placeholder="artista" spellcheck="false" />
+        <input id="bpm" class="narrow" type="number" value="90" min="20" max="300" />
+        <span class="unit">BPM</span>
+        <button id="save" class="primary">Guardar</button>
+        <select id="library"><option value="">— abrir —</option></select>
+        <span id="saved" class="saved"></span>
+      </div>
+    </header>
+
+    <section class="capture">
+      <div class="video-col">
+        <div class="row">
+          <input id="yt-id" placeholder="enlace o id de YouTube" spellcheck="false" />
+          <button id="yt-load">Cargar</button>
+        </div>
+        <div id="yt-host"></div>
+        <div class="row">
+          <button id="yt-play">▶ / ⏸</button>
+          <button id="yt-rewind">↺ 3s</button>
+          <button id="yt-slow">0.5×</button>
+          <button id="yt-075">0.75×</button>
+          <button id="yt-normal">1×</button>
+          <button id="yt-loop">Loop A–B</button>
+        </div>
+        <div id="yt-status" class="status">Sin vídeo.</div>
+      </div>
+
+      <div class="score-col">
+        <div id="score" class="score"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Compás actual</h2>
+      <div id="grid" class="grid"></div>
+      <div id="status" class="status-bar"></div>
+    </section>
+
+    <section class="help">
+      <h2>Atajos</h2>
+      <div class="help-cols">
+        <div>
+          <kbd>↑</kbd><kbd>↓</kbd> cambiar de cuerda<br />
+          <kbd>←</kbd><kbd>→</kbd> moverse por pulsos<br />
+          <kbd>Re Pág</kbd><kbd>Av Pág</kbd> cambiar de compás<br />
+          <kbd>espacio</kbd> avanzar
+        </div>
+        <div>
+          <kbd>0</kbd>–<kbd>9</kbd> traste (dos cifras seguidas = 10-24)<br />
+          <kbd>+</kbd><kbd>−</kbd> figura más corta o más larga<br />
+          <kbd>.</kbd> puntillo<br />
+          <kbd>R</kbd> silencio
+        </div>
+        <div>
+          <kbd>H</kbd> ligado &nbsp; <kbd>V</kbd> vibrato<br />
+          <kbd>P</kbd> apagado &nbsp; <kbd>G</kbd> fantasma<br />
+          <kbd>X</kbd> muerta &nbsp; <kbd>A</kbd> acento<br />
+          <kbd>L</kbd> dejar sonar &nbsp; <kbd>S</kbd> staccato
+        </div>
+        <div>
+          <kbd>Retroceso</kbd> borrar nota<br />
+          <kbd>⇧ Retroceso</kbd> quitar pulso<br />
+          <kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer<br />
+          <kbd>Intro</kbd> escuchar
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
