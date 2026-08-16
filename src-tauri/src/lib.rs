@@ -133,6 +133,10 @@ pub fn run() {
             session::session_open,
             session::session_list,
             session::session_set_meta,
+            session::session_preview_harder,
+            session::session_accept_harder,
+            session::session_discard_harder,
+            session::session_difficulty,
         ])
         .run(tauri::generate_context!())
         .expect("no se pudo inicializar la aplicación Tauri");

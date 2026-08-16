@@ -45,6 +45,7 @@ interface BarView {
   beats: BeatSummary[];
   numerator: number;
   denominator: number;
+  is_full: boolean;
 }
 
 /** Cuántas cuerdas tiene la guitarra. De momento fijo; saldrá de la afinación en M3. */
@@ -53,12 +54,23 @@ const STRING_COUNT = 6;
 /** Nombres de las cuerdas al aire, de la 1ª a la 6ª. */
 const STRING_NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
 
+/**
+ * Grosor de la línea de cada cuerda, siguiendo su calibre real.
+ *
+ * En el papel pautado todas las líneas son iguales, pero en una guitarra la sexta es
+ * gruesa y la prima fina. Respetarlo hace que la rejilla se lea como un mástil en vez de
+ * como una tabla, y ayuda a saber en qué cuerda estás sin contar.
+ */
+const STRING_WEIGHTS = ['1px', '1px', '1.5px', '2px', '2.5px', '3px'];
+
 export class Editor {
   private view: SessionView | null = null;
   private cursor: Cursor = createCursor();
   private bar: BeatSummary[] = [];
   /** Pulsos que caben en el compás actual según su indicación. */
   private slots = 4;
+  /** Si las figuras del compás actual ya suman el compás entero. */
+  private barIsFull = false;
   /** Último error mostrado, para que la autocomprobación pueda leerlo. */
   lastError = '';
   private readonly frets = new FretAccumulator();
@@ -108,6 +120,21 @@ export class Editor {
     await this.refresh();
   }
 
+  /**
+   * Muestra una versión propuesta sin cambiar la partitura de la sesión.
+   *
+   * Sirve para escuchar un arreglo antes de quedárselo: el criterio musical no se puede
+   * dar por bueno sin oírlo.
+   */
+  showPreview(tex: string): void {
+    this.api?.tex(tex);
+  }
+
+  /** Reproduce o pausa la partitura que se está mostrando. */
+  play(): void {
+    this.api?.playPause();
+  }
+
   /** Devuelve el AlphaTex actual. Lo usa la autocomprobación. */
   currentTex(): string {
     return this.view?.tex ?? '';
@@ -122,9 +149,13 @@ export class Editor {
     return {
       barCount: this.view?.bar_count ?? 1,
       stringCount: STRING_COUNT,
-      // Un compás vacío no tiene cero sitios: en 4/4 caben cuatro negras aunque no haya
-      // nada escrito. Y si ya hay más pulsos que eso, se deja escribir uno más al final.
-      beatsPerBar: () => Math.max(this.bar.length + 1, this.slots),
+      // Mientras el compás tenga sitio se deja escribir un pulso más; en cuanto las
+      // figuras suman el compás entero, avanzar salta al siguiente.
+      //
+      // Es una regla musical, no de conteo: cuatro negras llenan un 4/4 igual que ocho
+      // corcheas. Contar pulsos a secas hacía que el compás creciera sin fin y no se
+      // pudiera avanzar escribiendo.
+      beatsPerBar: () => Math.max(1, this.bar.length + (this.barIsFull ? 0 : 1)),
     };
   }
 
@@ -275,6 +306,7 @@ export class Editor {
       const view = await invoke<BarView>('session_bar_notes', { bar: this.cursor.bar });
       this.bar = view.beats;
       this.slots = Math.max(1, view.numerator);
+      this.barIsFull = view.is_full;
     } catch (error) {
       this.bar = [];
       this.lastError = formatError(error);
@@ -297,8 +329,9 @@ export class Editor {
   }
 
   private renderGrid(): void {
-    // Una columna más que pulsos existentes: la posición donde se va a escribir.
-    const columns = Math.max(this.bar.length + 1, this.cursor.beat + 1);
+    // Se muestran siempre al menos los pulsos que caben en el compás, más uno para
+    // escribir. Las columnas se reparten el ancho, así que nunca hay scroll horizontal.
+    const columns = Math.max(this.bar.length + 1, this.cursor.beat + 1, this.slots);
     const rows: string[] = [];
 
     for (let string = 1; string <= STRING_COUNT; string += 1) {
@@ -315,28 +348,36 @@ export class Editor {
         const classes = ['cell'];
         if (isCursor) classes.push('cursor');
         if (note) classes.push('has-note');
+        // Marca de tiempo fuerte, para no perder la referencia rítmica al escribir.
+        if (index > 0 && index % this.beatsPerPulse() === 0) classes.push('downbeat');
         cells.push(`<span class="${classes.join(' ')}">${text}</span>`);
       }
+
       rows.push(
-        `<div class="grid-row"><span class="string-name">${STRING_NAMES[string - 1]}</span>${cells.join('')}</div>`,
+        `<div class="grid-row" style="--cols:${columns};--string-weight:${STRING_WEIGHTS[string - 1]}">` +
+          `<span class="string-name">${STRING_NAMES[string - 1]}</span>${cells.join('')}</div>`,
       );
     }
 
     this.gridHost.innerHTML = rows.join('');
   }
 
+  /** Cada cuántas columnas cae un tiempo fuerte. */
+  private beatsPerPulse(): number {
+    return Math.max(1, Math.round(this.bar.length / this.slots)) || 1;
+  }
+
   private renderStatus(): void {
     const dotted = this.dots > 0 ? ' con puntillo' : '';
-    this.statusHost.innerHTML = [
-      `<b>compás</b> ${this.cursor.bar + 1}/${this.view?.bar_count ?? '?'}`,
-      `<b>pulso</b> ${this.cursor.beat + 1}`,
-      `<b>cuerda</b> ${this.cursor.string}ª`,
-      `<b>figura</b> 1/${this.duration}${dotted}`,
-      this.view?.can_undo ? 'deshacer disponible' : '',
-      this.status,
-    ]
-      .filter(Boolean)
-      .join(' &nbsp;·&nbsp; ');
+    const parts = [
+      `compás <b>${this.cursor.bar + 1}</b> de ${this.view?.bar_count ?? '?'}`,
+      `cuerda <b>${this.cursor.string}ª</b>`,
+      `figura <b>1/${this.duration}${dotted}</b>`,
+      `<kbd>↑↓</kbd> cuerda <kbd>←→</kbd> pulso <kbd>0-9</kbd> traste <kbd>F4</kbd> bucle`,
+    ];
+    if (this.status) parts.push(this.status);
+
+    this.statusHost.innerHTML = parts.join('<span class="sep">·</span>');
   }
 }
 

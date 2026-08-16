@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "id": "06615a60-4937-4846-850c-779a421d8380",
+  "meta": {
+    "title": "Prueba de guardado",
+    "artist": "Autocomprobación",
+    "tempo_bpm": 90.0
+  },
+  "master_bars": [
+    {
+      "index": 0,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 1,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 2,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 3,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 4,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 5,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 6,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 7,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 8,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 9,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 10,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 11,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 12,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 13,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 14,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 15,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "name": "Guitarra",
+      "short_name": "Gtr",
+      "midi_program": 25,
+      "midi_channel": 0,
+      "tuning": {
+        "midi_notes": [
+          64,
+          59,
+          55,
+          50,
+          45,
+          40
+        ],
+        "label": "Estándar"
+      },
+      "capo": 0,
+      "fret_count": 22,
+      "staves": [
+        {
+          "show_standard": false,
+          "show_tabs": true,
+          "bars": [
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 2,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 1,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 4,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 3,
+                          "string": 1,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 6,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 5,
+                          "string": 1,
+                          "fret": 5
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 8,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 7,
+                          "string": 1,
+                          "fret": 12
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 11,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 10,
+                          "string": 1,
+                          "fret": 0
+                        },
+                        {
+                          "id": 12,
+                          "string": 2,
+                          "fret": 1
+                        },
+                        {
+                          "id": 13,
+                          "string": 3,
+                          "fret": 0,
+                          "techniques": "HAMMER_PULL"
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 15,
+                      "duration": 8,
+                      "is_rest": true,
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sections": [],
+  "sync_points": [],
+  "next_id": 16
+}

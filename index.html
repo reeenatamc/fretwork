@@ -9,30 +9,33 @@
   <body>
     <header>
       <div class="toolbar">
+        <span class="wordmark">tabs<span>·</span>repo</span>
         <input id="title" class="title-input" value="Sin título" spellcheck="false" />
         <input id="artist" placeholder="artista" spellcheck="false" />
         <input id="bpm" class="narrow" type="number" value="90" min="20" max="300" />
         <span class="unit">BPM</span>
         <button id="save" class="primary">Guardar</button>
-        <select id="library"><option value="">— abrir —</option></select>
+        <button id="harder" class="accent">Más difícil…</button>
+        <select id="library"><option value="">Abrir…</option></select>
+        <button id="help-open" title="Atajos de teclado (?)">Atajos</button>
         <span id="saved" class="saved"></span>
       </div>
     </header>
 
-    <section class="capture">
+    <main class="capture">
       <div class="video-col">
         <div class="row">
-          <input id="yt-id" placeholder="enlace o id de YouTube" spellcheck="false" />
+          <input id="yt-id" placeholder="enlace de YouTube" spellcheck="false" />
           <button id="yt-load">Cargar</button>
         </div>
         <div id="yt-host"></div>
         <div class="row">
           <button id="yt-play">▶ / ⏸</button>
-          <button id="yt-rewind">↺ 3s</button>
-          <button id="yt-slow">0.5×</button>
-          <button id="yt-075">0.75×</button>
+          <button id="yt-rewind">↺ 3 s</button>
+          <button id="yt-slow">0,5×</button>
+          <button id="yt-075">0,75×</button>
           <button id="yt-normal">1×</button>
-          <button id="yt-loop">Loop A–B</button>
+          <button id="yt-loop">Bucle A–B</button>
         </div>
         <div id="yt-status" class="status">Sin vídeo.</div>
       </div>
@@ -40,43 +43,125 @@
       <div class="score-col">
         <div id="score" class="score"></div>
       </div>
-    </section>
+    </main>
 
-    <section>
-      <h2>Compás actual</h2>
+    <footer>
       <div id="grid" class="grid"></div>
       <div id="status" class="status-bar"></div>
-    </section>
+    </footer>
 
-    <section class="help">
-      <h2>Atajos</h2>
-      <div class="help-cols">
-        <div>
-          <kbd>↑</kbd><kbd>↓</kbd> cambiar de cuerda<br />
-          <kbd>←</kbd><kbd>→</kbd> moverse por pulsos<br />
-          <kbd>Re Pág</kbd><kbd>Av Pág</kbd> cambiar de compás<br />
-          <kbd>espacio</kbd> avanzar
+    <div id="help" class="panel" hidden>
+      <div class="panel-card wide">
+        <h2>Atajos de teclado</h2>
+        <p class="lead">
+          Todo se escribe sin soltar el teclado. Los controles del vídeo están en las
+          teclas de función para que no choquen con las notas.
+        </p>
+
+        <div class="keys">
+          <section>
+            <h3>Moverse</h3>
+            <dl>
+              <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>cambiar de cuerda</dd>
+              <dt><kbd>←</kbd><kbd>→</kbd></dt><dd>moverse por pulsos</dd>
+              <dt><kbd>Re Pág</kbd><kbd>Av Pág</kbd></dt><dd>cambiar de compás</dd>
+              <dt><kbd>espacio</kbd></dt><dd>avanzar un pulso</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h3>Notas</h3>
+            <dl>
+              <dt><kbd>0</kbd>–<kbd>9</kbd></dt><dd>traste; dos dígitos seguidos dan del 10 al 24</dd>
+              <dt><kbd>R</kbd></dt><dd>silencio</dd>
+              <dt><kbd>Retroceso</kbd></dt><dd>borrar la nota de esta cuerda</dd>
+              <dt><kbd>⇧</kbd>+<kbd>Retroceso</kbd></dt><dd>quitar el pulso entero</dd>
+              <dt><kbd>Insert</kbd></dt><dd>insertar un pulso</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h3>Ritmo</h3>
+            <dl>
+              <dt><kbd>+</kbd></dt><dd>figura más corta</dd>
+              <dt><kbd>−</kbd></dt><dd>figura más larga</dd>
+              <dt><kbd>.</kbd></dt><dd>puntillo</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h3>Técnicas</h3>
+            <dl>
+              <dt><kbd>H</kbd></dt><dd>ligado</dd>
+              <dt><kbd>V</kbd></dt><dd>vibrato</dd>
+              <dt><kbd>P</kbd></dt><dd>apagado con la palma</dd>
+              <dt><kbd>G</kbd></dt><dd>nota fantasma</dd>
+              <dt><kbd>X</kbd></dt><dd>nota muerta</dd>
+              <dt><kbd>A</kbd></dt><dd>acento</dd>
+              <dt><kbd>L</kbd></dt><dd>dejar sonar</dd>
+              <dt><kbd>S</kbd></dt><dd>staccato</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h3>Vídeo</h3>
+            <dl>
+              <dt><kbd>F1</kbd></dt><dd>reproducir o pausar</dd>
+              <dt><kbd>F2</kbd></dt><dd>retroceder 3 segundos</dd>
+              <dt><kbd>F3</kbd></dt><dd>media velocidad</dd>
+              <dt><kbd>F4</kbd></dt><dd>bucle A–B: abre, cierra, quita</dd>
+            </dl>
+          </section>
+
+          <section>
+            <h3>Canción</h3>
+            <dl>
+              <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>deshacer</dd>
+              <dt><kbd>Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>Z</kbd></dt><dd>rehacer</dd>
+              <dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>guardar</dd>
+              <dt><kbd>Intro</kbd></dt><dd>escuchar la partitura</dd>
+              <dt><kbd>?</kbd></dt><dd>abrir o cerrar esta ayuda</dd>
+            </dl>
+          </section>
         </div>
-        <div>
-          <kbd>0</kbd>–<kbd>9</kbd> traste (dos cifras seguidas = 10-24)<br />
-          <kbd>+</kbd><kbd>−</kbd> figura más corta o más larga<br />
-          <kbd>.</kbd> puntillo<br />
-          <kbd>R</kbd> silencio
-        </div>
-        <div>
-          <kbd>H</kbd> ligado &nbsp; <kbd>V</kbd> vibrato<br />
-          <kbd>P</kbd> apagado &nbsp; <kbd>G</kbd> fantasma<br />
-          <kbd>X</kbd> muerta &nbsp; <kbd>A</kbd> acento<br />
-          <kbd>L</kbd> dejar sonar &nbsp; <kbd>S</kbd> staccato
-        </div>
-        <div>
-          <kbd>Retroceso</kbd> borrar nota<br />
-          <kbd>⇧ Retroceso</kbd> quitar pulso<br />
-          <kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer<br />
-          <kbd>Intro</kbd> escuchar
+
+        <div class="panel-actions">
+          <button id="help-close" class="primary">Cerrar</button>
         </div>
       </div>
-    </section>
+    </div>
+
+    <div id="panel" class="panel" hidden>
+      <div class="panel-card">
+        <h2>Un poco más difícil</h2>
+        <p class="lead">
+          Se añaden arreglos donde caen bien y se deja intacto al menos el 40 % de la
+          canción. Escúchala antes de quedártela.
+        </p>
+
+        <div class="dial" id="dial">
+          <button data-target="0.08">Un pelín</button>
+          <button data-target="0.15" aria-pressed="true">Un poco</button>
+          <button data-target="0.25">Bastante</button>
+        </div>
+
+        <div class="score-shift">
+          <span>dificultad</span>
+          <b id="before-score">—</b>
+          <span class="arrow">→</span>
+          <b id="after-score">—</b>
+          <span id="delta-label"></span>
+        </div>
+
+        <ul class="moves" id="moves"></ul>
+
+        <div class="panel-actions">
+          <button id="panel-cancel">Descartar</button>
+          <button id="panel-listen">Escuchar</button>
+          <button id="panel-keep" class="primary">Quedármela</button>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -9,8 +9,10 @@
 //! identificadores internos ni la procedencia de los arreglos.
 
 pub mod alphatex;
+pub mod difficulty;
 pub mod edit;
 pub mod model;
 pub mod pitch;
+pub mod transform;
 
 pub use model::{Score, SCHEMA_VERSION};

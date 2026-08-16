@@ -44,6 +44,8 @@ impl AppState {
 struct Session {
     score: Score,
     history: EditHistory,
+    /// Versión adornada propuesta, todavía sin aceptar.
+    pending: Option<Score>,
 }
 
 /// Lo que necesita el frontend para pintarse tras cada cambio.
@@ -126,6 +128,7 @@ pub fn session_new(
     let session = Session {
         score,
         history: EditHistory::new(),
+        pending: None,
     };
     let view = session.view();
 
@@ -248,10 +251,26 @@ pub fn session_bar_notes(
                     .collect(),
             });
         }
+        // ¿Está el compás lleno? Se suma con aritmética racional exacta: con puntillos y
+        // tresillos, comparar en coma flotante daría respuestas erráticas justo en el
+        // borde, que es donde importa.
+        let capacity = tabs_core::model::Fraction::new(
+            u64::from(signature.numerator),
+            u64::from(signature.denominator),
+        );
+        let filled = session
+            .score
+            .iter_beats()
+            .filter(|(addr, _)| addr.bar == bar && addr.voice == 0)
+            .fold(tabs_core::model::Fraction::zero(), |acc, (_, beat)| {
+                acc + beat.duration_in_whole_notes()
+            });
+
         Ok(BarView {
             beats: summary,
             numerator: signature.numerator,
             denominator: signature.denominator,
+            is_full: filled.as_f64() >= capacity.as_f64(),
         })
     })
 }
@@ -287,6 +306,7 @@ pub fn session_open(
     let session = Session {
         score,
         history: EditHistory::new(),
+        pending: None,
     };
     let view = session.view();
 
@@ -342,6 +362,88 @@ pub fn session_set_meta(
     })
 }
 
+/// Propuesta de arreglo: la versión más difícil, sin aplicarla todavía.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ArrangementPreview {
+    /// Detalle de lo que se hizo y cuánto subió la dificultad.
+    pub arrangement: tabs_core::transform::Arrangement,
+    /// La versión adornada, lista para renderizar y escuchar.
+    pub tex: String,
+}
+
+/// Propone una versión más difícil sin tocar la partitura abierta.
+///
+/// No se aplica nada hasta que se acepta: la persona tiene que poder escucharla y
+/// descartarla, porque el criterio musical no se puede dar por bueno sin oírlo.
+///
+/// # Errors
+///
+/// Falla si no hay sesión abierta.
+#[tauri::command]
+pub fn session_preview_harder(
+    state: tauri::State<'_, AppState>,
+    target_delta: f32,
+) -> Result<ArrangementPreview, SessionError> {
+    state.with_session(|session| {
+        let options = tabs_core::transform::Options {
+            target_delta,
+            ..tabs_core::transform::Options::default()
+        };
+        let (arranged, arrangement) = tabs_core::transform::embellish(&session.score, options);
+        let tex = to_alphatex(&arranged);
+        // Se guarda a un lado para poder aceptarla sin recalcular.
+        session.pending = Some(arranged);
+        Ok(ArrangementPreview { arrangement, tex })
+    })
+}
+
+/// Acepta la propuesta y la deja como versión actual.
+///
+/// El cambio entra en el historial, así que se puede deshacer como cualquier otra edición.
+///
+/// # Errors
+///
+/// Falla si no hay ninguna propuesta pendiente.
+#[tauri::command]
+pub fn session_accept_harder(
+    state: tauri::State<'_, AppState>,
+) -> Result<SessionView, SessionError> {
+    state.with_session(|session| {
+        let arranged = session
+            .pending
+            .take()
+            .ok_or_else(|| SessionError::Edit("no hay ninguna propuesta que aceptar".to_owned()))?;
+        session.score = arranged;
+        // Adornar reescribe la partitura entera, así que el historial de operaciones
+        // sueltas deja de tener sentido: se empieza de cero desde esta versión.
+        session.history = EditHistory::new();
+        Ok(session.view())
+    })
+}
+
+/// Descarta la propuesta pendiente.
+///
+/// # Errors
+///
+/// Falla si no hay sesión abierta.
+#[tauri::command]
+pub fn session_discard_harder(state: tauri::State<'_, AppState>) -> Result<(), SessionError> {
+    state.with_session(|session| {
+        session.pending = None;
+        Ok(())
+    })
+}
+
+/// Dificultad de la partitura abierta, de 0 a 100.
+///
+/// # Errors
+///
+/// Falla si no hay sesión abierta.
+#[tauri::command]
+pub fn session_difficulty(state: tauri::State<'_, AppState>) -> Result<f32, SessionError> {
+    state.with_session(|session| Ok(tabs_core::difficulty::evaluate(&session.score).score))
+}
+
 /// Estado de un compás para la interfaz.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BarView {
@@ -354,6 +456,11 @@ pub struct BarView {
     pub numerator: u8,
     /// Figura que vale un pulso.
     pub denominator: u8,
+    /// Si las figuras escritas ya suman el compás entero.
+    ///
+    /// Es lo que decide cuándo la barra espaciadora salta al compás siguiente. Sin este
+    /// dato el compás crecía sin límite y no había forma de avanzar escribiendo.
+    pub is_full: bool,
 }
 
 /// Resumen de un pulso para la interfaz.
@@ -394,6 +501,7 @@ mod tests {
         *state.session.lock().unwrap() = Some(Session {
             score: Score::new("Prueba", 4),
             history: EditHistory::new(),
+            pending: None,
         });
         state
     }

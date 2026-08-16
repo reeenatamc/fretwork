@@ -40,6 +40,9 @@ async function type(editor: Editor, sequence: string): Promise<void> {
   }
 }
 
+/** Antes y después del arreglo, para poder enseñarlo en el informe. */
+let arrangementDemo: { before: string; after: string; moves: unknown[] } | null = null;
+
 export async function runSelfTest(
   editor: Editor,
   report: (json: string) => Promise<unknown>,
@@ -167,6 +170,67 @@ export async function runSelfTest(
       reopened.tex.includes('0.1') && reopened.tex.includes('12.1'),
       reopened.tex.includes('12.1') ? 'las notas sobrevivieron al viaje' : 'se perdió algo',
     );
+
+    // ── Transcribir un riff de verdad y adornarlo ────────────────────────
+    // Es la prueba que importa de la función estrella: sobre una melodía real,
+    // no sobre un caso de laboratorio.
+    await invoke('session_new', { title: 'Riff de prueba', barCount: 8, tempoBpm: 100 });
+    await editor.reload();
+
+    // Escala de sol por la tercera cuerda, cuatro negras por compás.
+    const frets = ['0', '2', '4', '5', '7', '9', '11', '12'];
+    for (let bar = 0; bar < 8; bar += 1) {
+      for (let i = 0; i < 4; i += 1) {
+        const fret = frets[(bar * 2 + i) % frets.length] ?? '0';
+        for (const digit of fret) await press(editor, digit);
+        await press(editor, ' ');
+      }
+    }
+
+    const beforeTex = editor.currentTex();
+    const beforeScore = await invoke<number>('session_difficulty');
+    check(
+      'se transcribe un riff completo',
+      (beforeTex.match(/\|/g)?.length ?? 0) >= 8 && beforeScore > 0,
+      `8 compases escritos, dificultad ${beforeScore.toFixed(1)}/100`,
+    );
+
+    const preview = await invoke<{
+      arrangement: { before: number; after: number; moves: unknown[]; untouched_ratio: number };
+      tex: string;
+    }>('session_preview_harder', { targetDelta: 0.15 });
+
+    const { before: scoreBefore, after: scoreAfter, moves, untouched_ratio } = preview.arrangement;
+    check(
+      'la versión adornada es más difícil',
+      scoreAfter > scoreBefore,
+      `${scoreBefore.toFixed(1)} → ${scoreAfter.toFixed(1)} con ${moves.length} arreglos`,
+    );
+    check(
+      'se respeta el suelo de compases intactos',
+      untouched_ratio >= 0.4,
+      `queda intacto el ${(untouched_ratio * 100).toFixed(0)} %`,
+    );
+    check(
+      'los arreglos aparecen en la tablatura',
+      preview.tex.includes('{h}') || preview.tex.includes('{v}') || preview.tex.includes('{sl}'),
+      'ligados, vibratos o arrastres escritos',
+    );
+
+    await invoke('session_accept_harder');
+    await editor.reload();
+    const afterScore = await invoke<number>('session_difficulty');
+    check(
+      'aceptar la deja aplicada',
+      afterScore > beforeScore,
+      `dificultad de la canción: ${beforeScore.toFixed(1)} → ${afterScore.toFixed(1)}`,
+    );
+
+    arrangementDemo = {
+      before: beforeTex,
+      after: editor.currentTex(),
+      moves: preview.arrangement.moves,
+    };
   } catch (error) {
     check('la sesión no revienta', false, String(error));
   }
@@ -181,6 +245,7 @@ export async function runSelfTest(
         // Sin esto, un fallo de la frontera IPC se ve como "no pasó nada" y cuesta
         // muchísimo más diagnosticar de lo necesario.
         lastError: editor.lastError,
+        arrangementDemo,
         finalTex: editor.currentTex(),
       },
       null,

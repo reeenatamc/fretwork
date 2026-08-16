@@ -76,6 +76,84 @@ async function refreshLibrary(): Promise<void> {
   }
 }
 
+// ─────────────────────────────────────────────────────────── Arreglos
+
+interface AppliedMove {
+  move_id: string;
+  bar: number;
+  description: string;
+  delta: number;
+}
+
+interface ArrangementPreview {
+  arrangement: {
+    before: number;
+    after: number;
+    moves: AppliedMove[];
+    untouched_ratio: number;
+  };
+  tex: string;
+}
+
+/** Objetivo de dificultad seleccionado en el panel, en tanto por uno. */
+let target = 0.15;
+
+async function previewHarder(): Promise<void> {
+  const panel = $('panel');
+  panel.hidden = false;
+  $('moves').innerHTML = '<li>Buscando dónde meter los arreglos…</li>';
+
+  try {
+    const preview = await invoke<ArrangementPreview>('session_preview_harder', {
+      targetDelta: target,
+    });
+    const { before, after, moves, untouched_ratio } = preview.arrangement;
+
+    $('before-score').textContent = before.toFixed(0);
+    $('after-score').textContent = after.toFixed(0);
+    const percent = before > 0 ? ((after - before) / before) * 100 : 0;
+    $('delta-label').textContent =
+      `+${percent.toFixed(0)} % · queda intacto el ${(untouched_ratio * 100).toFixed(0)} %`;
+
+    $('moves').innerHTML = moves.length
+      ? moves
+          .map(
+            (move) =>
+              `<li><span class="bar-ref">compás ${move.bar}</span>` +
+              `<span class="what">${move.description.replace(/,\s*compás \d+$/, '')}</span>` +
+              `<span class="delta">+${move.delta.toFixed(1)}</span></li>`,
+          )
+          .join('')
+      : '<li>No encontré dónde meter arreglos sin desfigurar la canción.</li>';
+
+    // Se muestra la propuesta en la partitura para poder escucharla antes de decidir.
+    editor.showPreview(preview.tex);
+  } catch (error) {
+    $('moves').innerHTML = `<li>⚠ ${formatError(error)}</li>`;
+  }
+}
+
+async function keepHarder(): Promise<void> {
+  try {
+    await invoke('session_accept_harder');
+    await editor.reload();
+    $('panel').hidden = true;
+    notify('versión más difícil aplicada');
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
+  }
+}
+
+async function discardHarder(): Promise<void> {
+  try {
+    await invoke('session_discard_harder');
+  } catch {
+    // Descartar nunca debe bloquear el cierre del panel.
+  }
+  await editor.reload();
+  $('panel').hidden = true;
+}
+
 // ─────────────────────────────────────────────────────────── YouTube
 
 async function loadVideo(): Promise<void> {
@@ -194,7 +272,32 @@ async function main(): Promise<void> {
   $('yt-normal').addEventListener('click', () => player?.setPlaybackRate(1));
   $('yt-loop').addEventListener('click', toggleLoop);
 
-  // Atajos del reproductor que no chocan con la escritura de notas.
+  $('harder').addEventListener('click', () => void previewHarder());
+  $('panel-keep').addEventListener('click', () => void keepHarder());
+  $('panel-cancel').addEventListener('click', () => void discardHarder());
+  $('panel-listen').addEventListener('click', () => editor.play());
+  $('dial').addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest('button');
+    if (!button?.dataset.target) return;
+    target = Number(button.dataset.target);
+    for (const other of $('dial').querySelectorAll('button')) {
+      other.setAttribute('aria-pressed', String(other === button));
+    }
+    void previewHarder();
+  });
+
+  const help = $('help');
+  const toggleHelp = (show?: boolean) => {
+    help.hidden = show === undefined ? !help.hidden : !show;
+  };
+  $('help-open').addEventListener('click', () => toggleHelp(true));
+  $('help-close').addEventListener('click', () => toggleHelp(false));
+  help.addEventListener('click', (event) => {
+    // Pulsar fuera de la tarjeta cierra: es lo que espera cualquiera.
+    if (event.target === help) toggleHelp(false);
+  });
+
+  // Atajos del reproductor y de ventana, que no chocan con la escritura de notas.
   window.addEventListener('keydown', (event) => {
     if (event.ctrlKey || event.metaKey) {
       if (event.key.toLowerCase() === 's') {
@@ -203,6 +306,18 @@ async function main(): Promise<void> {
       }
       return;
     }
+
+    if (event.key === '?') {
+      event.preventDefault();
+      toggleHelp();
+      return;
+    }
+    if (event.key === 'Escape') {
+      toggleHelp(false);
+      $('panel').hidden = true;
+      return;
+    }
+
     switch (event.key) {
       case 'F1':
         event.preventDefault();

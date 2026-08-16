@@ -1,201 +1,499 @@
+/**
+ * Identidad visual: papel pautado y maderas de guitarra.
+ *
+ * Los pasteles son el encargo, pero una paleta hecha sólo de pasteles no funciona: todos
+ * caen en una banda estrecha de luminosidad y el contraste máximo entre dos cualesquiera
+ * ronda 1.5:1, cuando el texto necesita 4.5:1. Por eso aquí los pasteles son SUPERFICIE y
+ * ACENTO, nunca texto sobre claro, y todo se ancla con una tinta oscura que vive fuera de
+ * esa banda.
+ *
+ * Los tonos salen del instrumento, no de un muestrario: abeto de la tapa, palo de rosa,
+ * nylon, bronce oxidado de las cuerdas.
+ */
+
 :root {
-  --bg: #14151a;
-  --panel: #1c1e26;
-  --border: #2c2f3a;
-  --fg: #e6e7ea;
-  --muted: #9aa0ae;
-  --ok: #4ade80;
-  --fail: #f87171;
-  --pending: #fbbf24;
-  --accent: #7dd3fc;
+  /* Superficies: la tapa de abeto y el papel pautado. */
+  --paper: #f7f3ec;
+  --paper-deep: #efe7da;
+  --surface: #fffdf9;
+
+  /* Anclas de contraste, fuera de la banda pastel. */
+  --ink: #2b2622; /* 13.5:1 sobre --paper */
+  --ink-soft: #6b6058; /* 5.2:1 sobre --paper */
+  --line: #d9cfc0;
+  --line-strong: #bfb3a1;
+
+  /* Pasteles: rellenos y acentos. Nunca texto sobre fondo claro. */
+  --sage: #a9c4a4; /* bronce oxidado de las cuerdas */
+  --rose: #d4a5a5; /* palo de rosa */
+  --amber: #e5c185; /* nylon, laca */
+  --sky: #a3bfd9; /* acero */
+
+  /* Versiones profundas, para cuando un acento tiene que llevar texto encima. */
+  --sage-deep: #4a6b45;
+  --rose-deep: #8c4a4a;
+  --amber-deep: #8a6420;
+
+  --radius: 10px;
+  --gap: 14px;
+
+  /* Serif con calidez para los títulos; Segoe para la interfaz; monoespaciada para la
+     tablatura, que es monoespaciada por naturaleza. */
+  --font-display: Constantia, "Sitka Text", Georgia, serif;
+  --font-ui: "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
+
+/* La aplicación ocupa la ventana y no scrollea: la rejilla de escritura tiene que estar
+   siempre a la vista mientras se teclea, sin bajar a buscarla. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
 
 body {
-  margin: 0;
-  padding: 24px;
-  background: var(--bg);
-  color: var(--fg);
-  font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--paper);
+  color: var(--ink);
+  font: 14px/1.5 var(--font-ui);
 }
 
-h1 { font-size: 20px; margin: 0 0 4px; }
-h2 { font-size: 15px; margin: 0 0 12px; color: var(--accent); font-weight: 600; }
-.sub { margin: 0 0 24px; color: var(--muted); }
+/* ── Barra superior ─────────────────────────────────────────────────────── */
 
-section {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 16px;
+header {
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
 
-.row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  margin-right: 4px;
+  color: var(--ink);
+}
+.wordmark span {
+  color: var(--rose-deep);
+}
+
+input,
+select {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font: inherit;
+}
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 1px;
+}
+
+.title-input {
+  font-family: var(--font-display);
+  font-size: 15px;
+  min-width: 200px;
+}
+.narrow {
+  min-width: 68px;
+}
+.unit {
+  color: var(--ink-soft);
+  font-size: 12px;
+  margin-left: -4px;
+}
+.saved {
+  color: var(--sage-deep);
+  font-size: 12px;
+}
 
 button {
-  background: #262935;
-  color: var(--fg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 13px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font: inherit;
   cursor: pointer;
+  transition: background 120ms ease;
+}
+button:hover {
+  background: var(--paper-deep);
+}
+
+button.primary {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: var(--sage-deep);
+  font-weight: 600;
+}
+button.primary:hover {
+  background: #9bba95;
+}
+
+button.accent {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--amber-deep);
+  font-weight: 600;
+}
+button.accent:hover {
+  background: #dcb572;
+}
+
+/* ── Zona central: vídeo y partitura ────────────────────────────────────── */
+
+.capture {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: var(--gap);
+  padding: var(--gap);
+  min-height: 0; /* deja que los hijos scrolleen en vez de estirar la fila */
+}
+
+.video-col,
+.score-col {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.row input {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.row button {
+  padding: 6px 10px;
   font-size: 13px;
 }
-button:hover { background: #30343f; }
-button.primary { background: #2563eb; border-color: #3b82f6; }
-button.primary:hover { background: #3b82f6; }
 
-input {
-  background: #262935;
-  color: var(--fg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 11px;
-  font-family: ui-monospace, monospace;
-  min-width: 180px;
+#yt-host {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--ink);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+#yt-host iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
-#check-list { list-style: none; padding: 0; margin: 0 0 14px; }
-#check-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
-}
-#check-list li:last-child { border-bottom: none; }
-
-.badge {
-  font-weight: 700;
-  min-width: 78px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-}
-.badge.ok { color: var(--ok); }
-.badge.fail { color: var(--fail); }
-.badge.pending { color: var(--pending); }
-.check-name { flex: 0 0 210px; }
-.check-detail { color: var(--muted); font-size: 12px; }
-
-.env {
-  font-family: ui-monospace, monospace;
-  font-size: 12px;
-  color: var(--muted);
-  background: #16171d;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  white-space: pre-wrap;
+/* La partitura sí scrollea por dentro: es el único sitio donde tiene sentido. */
+.score {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
 }
 
 .status {
-  font-family: ui-monospace, monospace;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 10px;
-  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  min-height: 16px;
 }
 
-.score {
-  background: #fff;
-  border-radius: 8px;
-  padding: 10px;
-  overflow-x: auto;
-  min-height: 180px;
+/* ── Rejilla de escritura: papel pautado de verdad ──────────────────────── */
+
+footer {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 10px 16px 12px;
 }
 
-#yt-host { width: 100%; max-width: 640px; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; }
-#yt-host iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; }
-
-/* ── Barra superior ─────────────────────────────────────────────────────── */
-.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-.title-input { font-size: 15px; font-weight: 600; min-width: 220px; }
-.narrow { min-width: 72px; }
-.unit { color: var(--muted); font-size: 12px; margin-left: -4px; }
-.saved { color: var(--ok); font-size: 12px; }
-
-select {
-  background: #262935;
-  color: var(--fg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 7px 10px;
-  font-size: 13px;
-}
-
-/* ── Captura: vídeo y partitura lado a lado ─────────────────────────────── */
-.capture { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-.video-col { flex: 0 0 420px; max-width: 100%; }
-.score-col { flex: 1 1 460px; min-width: 0; }
-.video-col .row { margin-bottom: 8px; }
-.video-col input { min-width: 240px; }
-
-/* ── Rejilla de captura ─────────────────────────────────────────────────── */
 .grid {
-  font-family: ui-monospace, "Cascadia Mono", monospace;
-  font-size: 15px;
-  line-height: 1.7;
-  background: #16171d;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px;
-  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  display: grid;
+  gap: 0;
 }
 
-.grid-row { white-space: nowrap; }
+/*
+ * Cada fila es una cuerda con su línea dibujada de lado a lado. Las columnas se reparten
+ * el ancho disponible, así que el compás entra entero sin scroll horizontal.
+ *
+ * El grosor de la línea sigue el calibre real de la cuerda: la sexta es gruesa y la prima
+ * fina. Es un detalle del instrumento, no del papel, y hace que la rejilla se lea como un
+ * mástil en vez de como una tabla.
+ */
+.grid-row {
+  display: grid;
+  grid-template-columns: 26px repeat(var(--cols), minmax(0, 1fr));
+  align-items: center;
+  height: 24px;
+  position: relative;
+}
+
+.grid-row::after {
+  content: "";
+  position: absolute;
+  left: 26px;
+  right: 0;
+  top: 50%;
+  height: var(--string-weight, 1px);
+  background: var(--line);
+  z-index: 0;
+}
 
 .string-name {
-  display: inline-block;
-  width: 22px;
-  color: var(--muted);
+  color: var(--ink-soft);
+  font-size: 11px;
   user-select: none;
+  z-index: 1;
 }
 
 .cell {
-  display: inline-block;
-  min-width: 26px;
+  position: relative;
+  z-index: 1;
   text-align: center;
-  padding: 1px 3px;
-  border-radius: 4px;
-  color: #4c5261;
+  font-variant-numeric: tabular-nums;
+  color: var(--line-strong);
+  padding: 1px 0;
 }
 
-.cell.has-note { color: var(--fg); font-weight: 600; }
+/* Las notas tapan la línea de la cuerda, como en una tablatura impresa. */
+.cell.has-note {
+  color: var(--ink);
+  font-weight: 600;
+  background: var(--surface);
+  border-radius: 4px;
+}
 
 .cell.cursor {
-  background: #2563eb;
-  color: #fff;
-  box-shadow: 0 0 0 1px #60a5fa;
+  background: var(--amber);
+  color: var(--amber-deep);
+  font-weight: 700;
+  border-radius: 5px;
+  box-shadow: 0 0 0 1px var(--amber-deep);
+}
+
+/* Separadores de tiempo: dan referencia rítmica sin cargar la rejilla. */
+.cell.downbeat::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--line);
+  z-index: 0;
 }
 
 .status-bar {
-  margin-top: 12px;
+  margin-top: 8px;
   font-size: 12px;
-  color: var(--muted);
-  min-height: 18px;
+  color: var(--ink-soft);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
 }
-.status-bar b { color: var(--accent); font-weight: 600; }
-
-.help { font-size: 12px; color: var(--muted); }
-.help-cols { display: flex; gap: 32px; flex-wrap: wrap; line-height: 1.9; }
+.status-bar b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.status-bar .sep {
+  color: var(--line-strong);
+}
 
 kbd {
-  background: #262935;
-  border: 1px solid var(--border);
+  background: var(--paper);
+  border: 1px solid var(--line);
   border-bottom-width: 2px;
   border-radius: 4px;
-  padding: 1px 6px;
-  font-family: ui-monospace, monospace;
+  padding: 0 5px;
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--fg);
+  color: var(--ink-soft);
 }
 
-/* ── Impresión ────────────────────────────────────────────────────────────
-   El contenedor de impresión existe siempre pero está fuera de la vista;
-   al imprimir se oculta todo lo demás y se le devuelve el flujo normal. */
+/* ── Panel de arreglos ──────────────────────────────────────────────────── */
+
+.panel {
+  position: fixed;
+  inset: 0;
+  background: rgb(43 38 34 / 45%);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 10;
+}
+.panel[hidden] {
+  display: none;
+}
+
+.panel-card {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  padding: 20px 22px;
+  max-width: 620px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: 0 18px 48px rgb(43 38 34 / 22%);
+}
+
+.panel-card.wide {
+  max-width: 780px;
+}
+
+/* Los atajos van en columnas que se reparten solas: caben todos sin scroll en una
+   ventana normal, y se apilan sin romperse si la ventana es estrecha. */
+.keys {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 4px 24px;
+  margin-bottom: 18px;
+}
+
+.keys h3 {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rose-deep);
+  margin: 10px 0 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line);
+}
+
+.keys dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  align-items: baseline;
+  font-size: 12.5px;
+}
+
+.keys dt {
+  white-space: nowrap;
+}
+
+.keys dd {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.panel-card h2 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  margin: 0 0 4px;
+}
+.panel-card p.lead {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.dial {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.dial button {
+  flex: 1 1 0;
+  min-width: 96px;
+}
+.dial button[aria-pressed="true"] {
+  background: var(--sky);
+  border-color: var(--sky);
+  color: #24435c;
+  font-weight: 600;
+}
+
+.moves {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  font-size: 13px;
+}
+.moves li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.moves li:last-child {
+  border-bottom: none;
+}
+.moves .bar-ref {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  flex: 0 0 62px;
+}
+.moves .what {
+  flex: 1;
+}
+.moves .delta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--sage-deep);
+}
+
+.score-shift {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.score-shift b {
+  font-size: 22px;
+  font-family: var(--font-ui);
+}
+.score-shift .arrow {
+  color: var(--ink-soft);
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* ── Impresión ──────────────────────────────────────────────────────────── */
+
 #print-host {
   position: absolute;
   left: -10000px;
@@ -210,6 +508,12 @@ kbd {
     margin: 12mm;
   }
 
+  html,
+  body {
+    height: auto;
+    overflow: visible;
+  }
+
   body > *:not(#print-host) {
     display: none !important;
   }
@@ -217,8 +521,7 @@ kbd {
   body {
     background: #fff;
     color: #000;
-    padding: 0;
-    margin: 0;
+    display: block;
   }
 
   #print-host {
