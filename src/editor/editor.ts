@@ -117,6 +117,10 @@ export class Editor {
     this.view = await invoke<SessionView>('session_view', {});
     this.cursor = createCursor();
     this.frets.reset();
+    // La figura vuelve a la negra: arrastrar la del trabajo anterior a una canción nueva
+    // hace que se escriba con una figura que nadie eligió.
+    this.duration = 4;
+    this.dots = 0;
     await this.refresh();
   }
 

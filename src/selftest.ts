@@ -245,6 +245,9 @@ export async function runSelfTest(
         // Sin esto, un fallo de la frontera IPC se ve como "no pasó nada" y cuesta
         // muchísimo más diagnosticar de lo necesario.
         lastError: editor.lastError,
+        // Medidas reales de la maquetación: comprobar «cabe en la ventana» a ojo desde
+        // una captura es adivinar, y esto lo responde con números.
+        layout: measureLayout(),
         arrangementDemo,
         finalTex: editor.currentTex(),
       },
@@ -252,6 +255,35 @@ export async function runSelfTest(
       2,
     ),
   );
+}
+
+/**
+ * Mide las tres bandas de la interfaz.
+ *
+ * El requisito es que la rejilla de escritura esté siempre visible sin desplazarse, y eso
+ * se comprueba viendo si el pie termina dentro de la ventana.
+ */
+function measureLayout(): Record<string, unknown> {
+  const rect = (selector: string) => {
+    const element = document.querySelector(selector);
+    if (!element) return null;
+    const { top, height, width } = element.getBoundingClientRect();
+    return { top: Math.round(top), height: Math.round(height), width: Math.round(width) };
+  };
+
+  const footer = rect('footer');
+  const viewportHeight = window.innerHeight;
+
+  return {
+    viewport: { width: window.innerWidth, height: viewportHeight },
+    devicePixelRatio: window.devicePixelRatio,
+    header: rect('header'),
+    capture: rect('.capture'),
+    footer,
+    documentHeight: document.documentElement.scrollHeight,
+    // Lo que de verdad importa: ¿acaba el pie dentro de la ventana?
+    footerFitsOnScreen: footer ? footer.top + footer.height <= viewportHeight + 1 : false,
+  };
 }
 
 /** Recorta el AlphaTex para que quepa en un mensaje de error. */

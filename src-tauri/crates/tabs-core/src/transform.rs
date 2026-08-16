@@ -133,7 +133,11 @@ pub fn embellish(score: &Score, options: Options) -> (Score, Arrangement) {
     let mut applied: Vec<AppliedMove> = Vec::new();
     let mut touched_beats = 0_usize;
     // Cuántos arreglos lleva cada compás, para repartirlos en vez de amontonarlos.
-    let mut moves_per_bar: Vec<usize> = vec![0; score.bar_count() as usize + 1];
+    let bar_slots = score.bar_count() as usize + 1;
+    let mut moves_per_bar: Vec<usize> = vec![0; bar_slots];
+    // Qué tipos de arreglo lleva ya cada compás. Un compás con cuatro ligados seguidos
+    // no suena a arreglo, suena a tic: la variedad es parte de que quede bien.
+    let mut kinds_per_bar: Vec<Vec<MoveKind>> = vec![Vec::new(); bar_slots];
 
     let target = baseline.score * (1.0 + options.target_delta);
     let max_touched = ((1.0 - options.min_untouched) * total_beats as f32).floor() as usize;
@@ -168,6 +172,14 @@ pub fn embellish(score: &Score, options: Options) -> (Score, Arrangement) {
             if moves_per_bar.get(candidate.bar).copied().unwrap_or(0) > pass {
                 continue;
             }
+            // Cada tipo de arreglo, una vez por compás. Sin esto gana siempre el mismo
+            // —el de mayor prioridad— y el compás acaba con cuatro ligados idénticos.
+            if kinds_per_bar
+                .get(candidate.bar)
+                .is_some_and(|kinds| kinds.contains(&candidate.kind))
+            {
+                continue;
+            }
 
             let current = evaluate(&working);
             let mut attempt = working.clone();
@@ -191,6 +203,9 @@ pub fn embellish(score: &Score, options: Options) -> (Score, Arrangement) {
             touched_beats += 1;
             if let Some(count) = moves_per_bar.get_mut(candidate.bar) {
                 *count += 1;
+            }
+            if let Some(kinds) = kinds_per_bar.get_mut(candidate.bar) {
+                kinds.push(candidate.kind);
             }
 
             applied.push(AppliedMove {
@@ -542,8 +557,11 @@ mod tests {
                     // Sube en los compases pares y baja en los impares.
                     let step = if bar % 2 == 0 { i } else { 3 - i };
                     let mut beat = Beat::new(BeatId(0), Duration::Quarter);
-                    beat.notes
-                        .push(Note::new(NoteId(0), 3, frets[(bar / 2 * 2 + step) % frets.len()]));
+                    beat.notes.push(Note::new(
+                        NoteId(0),
+                        3,
+                        frets[(bar / 2 * 2 + step) % frets.len()],
+                    ));
                     beat
                 })
                 .collect();
@@ -594,6 +612,32 @@ mod tests {
     }
 
     #[test]
+    fn los_arreglos_no_son_todos_del_mismo_tipo() {
+        // Cuatro ligados seguidos no suenan a arreglo, suenan a tic.
+        let (_, result) = embellish(&scale(), Options::default());
+        let tipos: std::collections::HashSet<&str> =
+            result.moves.iter().map(|m| m.move_id.as_str()).collect();
+        assert!(
+            tipos.len() >= 2,
+            "todos los arreglos fueron del mismo tipo: {tipos:?}"
+        );
+    }
+
+    #[test]
+    fn ningun_compas_repite_el_mismo_tipo_de_arreglo() {
+        let (_, result) = embellish(&scale(), Options::default());
+        let mut vistos = std::collections::HashSet::new();
+        for aplicado in &result.moves {
+            assert!(
+                vistos.insert((aplicado.bar, aplicado.move_id.clone())),
+                "el compás {} repitió «{}»",
+                aplicado.bar,
+                aplicado.move_id
+            );
+        }
+    }
+
+    #[test]
     fn se_respeta_el_suelo_de_pulsos_intactos() {
         let (_, result) = embellish(&scale(), Options::default());
         assert!(
@@ -615,7 +659,10 @@ mod tests {
         // Ningún compás debe llevarse la mayor parte: si uno los concentra, la canción
         // queda con un trozo recargado y el resto igual que estaba.
         let maximo = por_compas.values().copied().max().unwrap_or(0);
-        assert!(maximo <= 3, "un compás se llevó {maximo} arreglos: {por_compas:?}");
+        assert!(
+            maximo <= 3,
+            "un compás se llevó {maximo} arreglos: {por_compas:?}"
+        );
         assert!(
             por_compas.len() >= 3,
             "los arreglos se concentraron en sólo {} compases",

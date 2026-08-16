@@ -14,7 +14,9 @@
       {
         "title": "tabs-repo",
         "width": 1280,
-        "height": 900,
+        "height": 820,
+        "minWidth": 900,
+        "minHeight": 620,
         "resizable": true,
         "fullscreen": false
       }

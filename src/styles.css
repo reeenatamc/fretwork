@@ -57,12 +57,24 @@ body {
   overflow: hidden;
 }
 
+/*
+ * Columna flexible en lugar de rejilla: la cabecera y el pie ocupan lo que necesitan y la
+ * zona central se queda con el resto, cediendo cuando hace falta. Es el patrón fiable
+ * para «que quepa en la ventana», y aquí es un requisito: la rejilla de escritura tiene
+ * que estar visible mientras se teclea, no a un scroll de distancia.
+ */
 body {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   background: var(--paper);
   color: var(--ink);
   font: 14px/1.5 var(--font-ui);
+}
+
+header,
+footer {
+  flex: 0 0 auto;
 }
 
 /* ── Barra superior ─────────────────────────────────────────────────────── */
@@ -78,6 +90,17 @@ header {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+/* Los campos de texto ceden ancho antes que salirse: en una ventana estrecha es
+   preferible un título más corto que perder el botón de guardar. */
+.toolbar input,
+.toolbar select {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.toolbar button {
+  flex: 0 0 auto;
 }
 
 .wordmark {
@@ -162,11 +185,15 @@ button.accent:hover {
 /* ── Zona central: vídeo y partitura ────────────────────────────────────── */
 
 .capture {
+  flex: 1 1 auto;
+  /* Sin esto, un hijo alto —la partitura— impide que este bloque encoja y acaba
+     empujando el pie fuera de la ventana. */
+  min-height: 0;
   display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
+  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: var(--gap);
   padding: var(--gap);
-  min-height: 0; /* deja que los hijos scrolleen en vez de estirar la fila */
 }
 
 .video-col,
@@ -209,7 +236,8 @@ button.accent:hover {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden;
+  /* Una partitura ancha se desplaza dentro de su panel, nunca arrastrando la ventana. */
+  overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -246,11 +274,18 @@ footer {
  * fina. Es un detalle del instrumento, no del papel, y hace que la rejilla se lea como un
  * mástil en vez de como una tabla.
  */
+/*
+ * Las celdas se reparten el ancho pero con tope: un compás de cuatro pulsos en una
+ * ventana ancha daría celdas de casi cuatro dedos de ancho, y eso deja de leerse como una
+ * tablatura para parecer una hoja de cálculo. Con el tope, el compás sigue entrando
+ * entero sin scroll y las cifras quedan juntas como en el papel.
+ */
 .grid-row {
   display: grid;
-  grid-template-columns: 26px repeat(var(--cols), minmax(0, 1fr));
+  grid-template-columns: 26px repeat(var(--cols), minmax(24px, 68px));
+  justify-content: start;
   align-items: center;
-  height: 24px;
+  height: 22px;
   position: relative;
 }
 

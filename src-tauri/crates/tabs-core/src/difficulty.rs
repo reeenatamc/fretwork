@@ -65,7 +65,11 @@ fn sat(value: f32, k: f32) -> f32 {
 ///
 /// Las cuerdas al aire no cuentan, porque no ocupan ningún dedo ni obligan a mover la mano.
 fn anchor(beat: &Beat) -> Option<u8> {
-    beat.notes.iter().filter(|n| n.fret > 0).map(|n| n.fret).min()
+    beat.notes
+        .iter()
+        .filter(|n| n.fret > 0)
+        .map(|n| n.fret)
+        .min()
 }
 
 /// Rasgos de un compás.
@@ -97,7 +101,10 @@ impl BarFeatures {
 
 /// Extrae los rasgos de un compás.
 fn features(beats: &[Beat], seconds: f32) -> BarFeatures {
-    let sounding: Vec<&Beat> = beats.iter().filter(|b| !b.is_rest && !b.notes.is_empty()).collect();
+    let sounding: Vec<&Beat> = beats
+        .iter()
+        .filter(|b| !b.is_rest && !b.notes.is_empty())
+        .collect();
 
     if sounding.is_empty() || seconds <= 0.0 {
         return BarFeatures {
@@ -121,7 +128,12 @@ fn features(beats: &[Beat], seconds: f32) -> BarFeatures {
     let span = sounding
         .iter()
         .filter_map(|beat| {
-            let frets: Vec<u8> = beat.notes.iter().filter(|n| n.fret > 0).map(|n| n.fret).collect();
+            let frets: Vec<u8> = beat
+                .notes
+                .iter()
+                .filter(|n| n.fret > 0)
+                .map(|n| n.fret)
+                .collect();
             let max = frets.iter().copied().max()?;
             let min = frets.iter().copied().min()?;
             Some(f32::from(max - min))
@@ -276,13 +288,21 @@ mod tests {
     #[test]
     fn una_redonda_sola_es_muy_facil() {
         let score = score_with(vec![note_beat(Duration::Whole, 1, 0)]);
-        assert!(evaluate(&score).score < 15.0, "salió {}", evaluate(&score).score);
+        assert!(
+            evaluate(&score).score < 15.0,
+            "salió {}",
+            evaluate(&score).score
+        );
     }
 
     #[test]
     fn las_semicorcheas_rapidas_son_mucho_mas_dificiles_que_las_negras() {
         let lentas = score_with((0..4).map(|_| note_beat(Duration::Quarter, 3, 5)).collect());
-        let rapidas = score_with((0..16).map(|_| note_beat(Duration::Sixteenth, 3, 5)).collect());
+        let rapidas = score_with(
+            (0..16)
+                .map(|_| note_beat(Duration::Sixteenth, 3, 5))
+                .collect(),
+        );
         assert!(
             evaluate(&rapidas).score > evaluate(&lentas).score * 1.5,
             "lentas {} vs rápidas {}",
@@ -327,7 +347,8 @@ mod tests {
             (0..4)
                 .map(|_| {
                     let mut beat = note_beat(Duration::Eighth, 3, 5);
-                    beat.notes[0].techniques = NoteTechniques::HAMMER_PULL | NoteTechniques::VIBRATO;
+                    beat.notes[0].techniques =
+                        NoteTechniques::HAMMER_PULL | NoteTechniques::VIBRATO;
                     beat
                 })
                 .collect(),
@@ -343,7 +364,11 @@ mod tests {
             beat.notes.push(Note::new(NoteId(1), string, fret));
         }
         let score = score_with(vec![beat]);
-        assert!(evaluate(&score).score < 30.0, "salió {}", evaluate(&score).score);
+        assert!(
+            evaluate(&score).score < 30.0,
+            "salió {}",
+            evaluate(&score).score
+        );
     }
 
     #[test]
