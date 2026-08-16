@@ -1,0 +1,1564 @@
+{
+  "schema_version": 1,
+  "id": "4bbb80e4-40c5-48d6-9f7f-0c0e4e74d393",
+  "meta": {
+    "title": "Estudio en mi menor",
+    "artist": "tabs-repo",
+    "tempo_bpm": 84.0
+  },
+  "master_bars": [
+    {
+      "index": 0,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 1,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 2,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 3,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 4,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 5,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 6,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 7,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 8,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 9,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 10,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 11,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 12,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 13,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 14,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    },
+    {
+      "index": 15,
+      "time_signature": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "key_signature": {
+        "fifths": 0,
+        "mode": "Major"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "name": "Guitarra",
+      "short_name": "Gtr",
+      "midi_program": 25,
+      "midi_channel": 0,
+      "tuning": {
+        "midi_notes": [
+          64,
+          59,
+          55,
+          50,
+          45,
+          40
+        ],
+        "label": "Estándar"
+      },
+      "capo": 0,
+      "fret_count": 22,
+      "staves": [
+        {
+          "show_standard": false,
+          "show_tabs": true,
+          "bars": [
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 2,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 1,
+                          "string": 6,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 4,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 3,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 6,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 5,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 8,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 7,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 10,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 9,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 12,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 11,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 14,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 13,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 16,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 15,
+                          "string": 5,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 18,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 17,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 20,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 19,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 22,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 21,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 24,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 23,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 26,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 25,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 28,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 27,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 30,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 29,
+                          "string": 5,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 32,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 31,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 34,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 33,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 36,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 35,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 38,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 37,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 40,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 39,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 42,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 41,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 44,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 43,
+                          "string": 5,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 46,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 45,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 48,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 47,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 50,
+                      "duration": 2,
+                      "notes": [
+                        {
+                          "id": 49,
+                          "string": 3,
+                          "fret": 0
+                        },
+                        {
+                          "id": 51,
+                          "string": 2,
+                          "fret": 1
+                        },
+                        {
+                          "id": 52,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 54,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 53,
+                          "string": 6,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 56,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 55,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 58,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 57,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 60,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 59,
+                          "string": 1,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 62,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 61,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 64,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 63,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 66,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 65,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 68,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 67,
+                          "string": 6,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 70,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 69,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 72,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 71,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 74,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 73,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 76,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 75,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 78,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 77,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 80,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 79,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 82,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 81,
+                          "string": 4,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 84,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 83,
+                          "string": 3,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 86,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 85,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 88,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 87,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 90,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 89,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 92,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 91,
+                          "string": 3,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 94,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 93,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 96,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 95,
+                          "string": 4,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 98,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 97,
+                          "string": 3,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 100,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 99,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 102,
+                      "duration": 2,
+                      "notes": [
+                        {
+                          "id": 101,
+                          "string": 3,
+                          "fret": 2
+                        },
+                        {
+                          "id": 103,
+                          "string": 2,
+                          "fret": 3
+                        },
+                        {
+                          "id": 104,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 106,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 105,
+                          "string": 6,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 108,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 107,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 110,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 109,
+                          "string": 1,
+                          "fret": 2,
+                          "techniques": "HAMMER_PULL"
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 112,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 111,
+                          "string": 1,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 114,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 113,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 116,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 115,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 118,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 117,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 120,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 119,
+                          "string": 5,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 122,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 121,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 124,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 123,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 126,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 125,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 128,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 127,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 130,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 129,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 132,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 131,
+                          "string": 1,
+                          "fret": 3,
+                          "techniques": "VIBRATO"
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 134,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 133,
+                          "string": 5,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 136,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 135,
+                          "string": 1,
+                          "fret": 5
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 138,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 137,
+                          "string": 1,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 140,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 139,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 142,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 141,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 144,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 143,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 146,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 145,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 148,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 147,
+                          "string": 4,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 150,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 149,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 152,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 151,
+                          "string": 3,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 154,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 153,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 155,
+                      "duration": 4,
+                      "is_rest": true,
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 157,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 156,
+                          "string": 6,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 159,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 158,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 161,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 160,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 163,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 162,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 165,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 164,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 167,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 166,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 169,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 168,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 171,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 170,
+                          "string": 5,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 173,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 172,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 175,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 174,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 177,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 176,
+                          "string": 1,
+                          "fret": 2
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 179,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 178,
+                          "string": 2,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 181,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 180,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 183,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 182,
+                          "string": 2,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 185,
+                      "duration": 4,
+                      "notes": [
+                        {
+                          "id": 184,
+                          "string": 5,
+                          "fret": 3
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 187,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 186,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 189,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 188,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 191,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 190,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 193,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 192,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 195,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 194,
+                          "string": 3,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    },
+                    {
+                      "id": 197,
+                      "duration": 8,
+                      "notes": [
+                        {
+                          "id": 196,
+                          "string": 2,
+                          "fret": 1
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "voices": [
+                {
+                  "beats": [
+                    {
+                      "id": 199,
+                      "duration": 1,
+                      "notes": [
+                        {
+                          "id": 198,
+                          "string": 6,
+                          "fret": 0
+                        },
+                        {
+                          "id": 200,
+                          "string": 5,
+                          "fret": 2
+                        },
+                        {
+                          "id": 201,
+                          "string": 4,
+                          "fret": 2
+                        },
+                        {
+                          "id": 202,
+                          "string": 3,
+                          "fret": 0
+                        },
+                        {
+                          "id": 203,
+                          "string": 2,
+                          "fret": 0
+                        },
+                        {
+                          "id": 204,
+                          "string": 1,
+                          "fret": 0
+                        }
+                      ],
+                      "provenance": null
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sections": [],
+  "sync_points": [],
+  "next_id": 205
+}

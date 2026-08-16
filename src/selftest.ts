@@ -6,6 +6,7 @@
  * se manifiesta en la aplicación empaquetada, y ahí no hay forma de mirar el resultado
  * salvo dejándolo escrito en disco.
  */
+import { PIECE_BARS, PIECE_NOTES, typePiece } from './demo-song';
 import type { Editor } from './editor/editor';
 
 interface Check {
@@ -42,6 +43,9 @@ async function type(editor: Editor, sequence: string): Promise<void> {
 
 /** Antes y después del arreglo, para poder enseñarlo en el informe. */
 let arrangementDemo: { before: string; after: string; moves: unknown[] } | null = null;
+
+/** La pieza completa transcrita, para poder revisarla en el informe. */
+let pieceDemo: { tex: string; bars: number; notes: number; typingMs: number } | null = null;
 
 export async function runSelfTest(
   editor: Editor,
@@ -171,6 +175,63 @@ export async function runSelfTest(
       reopened.tex.includes('12.1') ? 'las notas sobrevivieron al viaje' : 'se perdió algo',
     );
 
+    // ── Transcribir una pieza entera ─────────────────────────────────────
+    // La prueba que los tests unitarios no hacen: ¿aguanta una canción completa?
+    await invoke('session_new', {
+      title: 'Estudio en mi menor',
+      barCount: PIECE_BARS,
+      tempoBpm: 84,
+    });
+    await editor.reload();
+
+    const startedAt = Date.now();
+    await typePiece(editor);
+    const typingMs = Date.now() - startedAt;
+
+    // Los datos de cabecera se ponen antes de capturar el texto: si se ponen después, la
+    // comparación de «se guarda y se reabre igual» falla por el artista añadido y parece
+    // un fallo de guardado que no existe.
+    await invoke('session_set_meta', {
+      title: 'Estudio en mi menor',
+      artist: 'tabs-repo',
+      sourceUrl: null,
+      tempoBpm: 84,
+    });
+    await editor.reload();
+
+    const pieceTex = editor.currentTex();
+    const bars = pieceTex.split('\n').filter((line) => line.trim().endsWith('|'));
+    check(
+      'se transcribe una pieza de 16 compases',
+      bars.length === PIECE_BARS,
+      `${bars.length} de ${PIECE_BARS} compases, ${PIECE_NOTES} notas, ${typingMs} ms`,
+    );
+
+    // Cada compás tiene que estar lleno: si alguno quedó a medias, la mecánica de
+    // escritura pierde notas por el camino y la partitura no se puede reproducir bien.
+    const emptyBars = bars.filter((bar) => !/\d+\.\d/.test(bar)).length;
+    check(
+      'ningún compás quedó vacío',
+      emptyBars === 0,
+      emptyBars === 0 ? 'los 16 compases tienen notas' : `${emptyBars} compases sin una sola nota`,
+    );
+
+    check(
+      'los acordes y las técnicas sobrevivieron',
+      pieceTex.includes('(') && pieceTex.includes('{h}') && pieceTex.includes('{v}'),
+      'acordes apilados, ligado y vibrato presentes',
+    );
+
+    const pieceSlug = await invoke<string>('session_save');
+    const reloaded = await invoke<{ tex: string }>('session_open', { slug: pieceSlug });
+    check(
+      'la pieza entera se guarda y se reabre igual',
+      reloaded.tex === pieceTex,
+      reloaded.tex === pieceTex ? 'idéntica byte a byte' : 'algo cambió al ir y volver',
+    );
+
+    pieceDemo = { tex: pieceTex, bars: bars.length, notes: PIECE_NOTES, typingMs };
+
     // ── Transcribir un riff de verdad y adornarlo ────────────────────────
     // Es la prueba que importa de la función estrella: sobre una melodía real,
     // no sobre un caso de laboratorio.
@@ -248,6 +309,7 @@ export async function runSelfTest(
         // Medidas reales de la maquetación: comprobar «cabe en la ventana» a ojo desde
         // una captura es adivinar, y esto lo responde con números.
         layout: measureLayout(),
+        pieceDemo,
         arrangementDemo,
         finalTex: editor.currentTex(),
       },

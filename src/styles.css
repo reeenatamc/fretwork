@@ -361,6 +361,21 @@ footer {
   color: var(--line-strong);
 }
 
+/* Estado del compás: verde cuando cuadra, ámbar si falta, rojizo si se pasó. */
+.fill-ok {
+  color: var(--sage-deep);
+}
+.fill-partial {
+  color: var(--amber-deep);
+}
+.fill-over {
+  color: var(--rose-deep);
+  font-weight: 600;
+}
+.fill-empty {
+  color: var(--ink-soft);
+}
+
 kbd {
   background: var(--paper);
   border: 1px solid var(--line);

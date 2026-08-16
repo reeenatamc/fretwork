@@ -76,6 +76,44 @@ async function refreshLibrary(): Promise<void> {
   }
 }
 
+// ─────────────────────────────────────────────────────────── Sonido
+
+/**
+ * Rellena el selector de bancos de sonido con lo que haya en `soundfonts/`.
+ *
+ * Si la carpeta está vacía el selector no aparece: no tiene sentido enseñar una lista
+ * vacía, y el banco que trae alphaTab funciona sin configurar nada.
+ */
+async function refreshSoundFonts(): Promise<void> {
+  const select = $<HTMLSelectElement>('soundfont');
+  try {
+    const files = await invoke<string[]>('list_soundfonts');
+    if (files.length === 0) {
+      select.hidden = true;
+      return;
+    }
+    select.hidden = false;
+    select.innerHTML =
+      '<option value="">Sonido de serie</option>' +
+      files
+        .map((file) => `<option value="${file}">${file.replace(/\.(sf2|sf3)$/i, '')}</option>`)
+        .join('');
+  } catch {
+    select.hidden = true;
+  }
+}
+
+async function applySoundFont(name: string): Promise<void> {
+  if (!name) return;
+  try {
+    const bytes = await invoke<number[]>('read_soundfont', { name });
+    editor.loadSoundFont(new Uint8Array(bytes));
+    notify(`sonido: ${name}`);
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
+  }
+}
+
 // ─────────────────────────────────────────────────────────── Arreglos
 
 interface AppliedMove {
@@ -272,6 +310,19 @@ async function main(): Promise<void> {
   $('yt-normal').addEventListener('click', () => player?.setPlaybackRate(1));
   $('yt-loop').addEventListener('click', toggleLoop);
 
+  $('instrument').addEventListener('change', async (event) => {
+    const program = Number((event.target as HTMLSelectElement).value);
+    try {
+      await invoke('session_set_instrument', { program });
+      await editor.reload();
+    } catch (error) {
+      notify(`⚠ ${formatError(error)}`);
+    }
+  });
+  $('soundfont').addEventListener('change', (event) => {
+    void applySoundFont((event.target as HTMLSelectElement).value);
+  });
+
   $('harder').addEventListener('click', () => void previewHarder());
   $('panel-keep').addEventListener('click', () => void keepHarder());
   $('panel-cancel').addEventListener('click', () => void discardHarder());
@@ -341,6 +392,7 @@ async function main(): Promise<void> {
   });
 
   await refreshLibrary();
+  await refreshSoundFonts();
 
   if (await invoke<boolean>('is_selftest')) {
     await runSelfTest(editor, (report) => invoke('save_diagnostics', { report }));

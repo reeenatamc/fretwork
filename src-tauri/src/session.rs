@@ -266,11 +266,19 @@ pub fn session_bar_notes(
                 acc + beat.duration_in_whole_notes()
             });
 
+        // Qué fracción del compás está escrita. Ver por qué importa en `BarView::filled`.
+        let filled_ratio = if capacity.as_f64() > 0.0 {
+            filled.as_f64() / capacity.as_f64()
+        } else {
+            0.0
+        };
+
         Ok(BarView {
             beats: summary,
             numerator: signature.numerator,
             denominator: signature.denominator,
-            is_full: filled.as_f64() >= capacity.as_f64(),
+            is_full: filled_ratio >= 1.0,
+            filled: filled_ratio,
         })
     })
 }
@@ -360,6 +368,82 @@ pub fn session_set_meta(
         }
         Ok(session.view())
     })
+}
+
+/// Cambia el instrumento de la pista.
+///
+/// El número es el programa General MIDI: 24 nylon, 25 acústica metálica, 26 eléctrica
+/// jazz, 27 eléctrica limpia, 29 con saturación, 30 con distorsión.
+///
+/// # Errors
+///
+/// Falla si no hay sesión abierta.
+#[tauri::command]
+pub fn session_set_instrument(
+    state: tauri::State<'_, AppState>,
+    program: u8,
+) -> Result<SessionView, SessionError> {
+    state.with_session(|session| {
+        if let Some(track) = session.score.tracks.first_mut() {
+            track.midi_program = program;
+        }
+        Ok(session.view())
+    })
+}
+
+/// Lista los soundfonts que haya en la carpeta `soundfonts/` del repositorio.
+///
+/// El que trae alphaTab suena correcto pero delgado. En vez de empaquetar uno grande de
+/// licencia ajena, la aplicación carga el que se deje en esa carpeta: así cada quien usa
+/// el que prefiera sin que el repositorio cargue con decenas de megas.
+///
+/// # Errors
+///
+/// Falla si no se sabe dónde está el repositorio.
+#[tauri::command]
+pub fn list_soundfonts(state: tauri::State<'_, AppState>) -> Result<Vec<String>, SessionError> {
+    let dir = state.root_path()?.join("soundfonts");
+    let Ok(entries) = std::fs::read_dir(&dir) else {
+        // Que no exista la carpeta no es un error: simplemente no hay ninguno.
+        return Ok(Vec::new());
+    };
+
+    let mut names: Vec<String> = entries
+        .flatten()
+        .filter_map(|entry| {
+            let path = entry.path();
+            let extension = path.extension()?.to_str()?.to_lowercase();
+            if extension == "sf2" || extension == "sf3" {
+                path.file_name()?.to_str().map(ToOwned::to_owned)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    names.sort();
+    Ok(names)
+}
+
+/// Lee un soundfont de la carpeta `soundfonts/` para que alphaTab lo cargue.
+///
+/// # Errors
+///
+/// Falla si el archivo no existe o no se puede leer.
+#[tauri::command]
+pub fn read_soundfont(
+    state: tauri::State<'_, AppState>,
+    name: String,
+) -> Result<Vec<u8>, SessionError> {
+    // Sólo el nombre del archivo: un nombre con rutas dentro podría sacar la lectura
+    // fuera de la carpeta prevista.
+    let file_name = std::path::Path::new(&name)
+        .file_name()
+        .ok_or_else(|| SessionError::Edit("nombre de archivo inválido".to_owned()))?;
+
+    let path = state.root_path()?.join("soundfonts").join(file_name);
+    std::fs::read(&path)
+        .map_err(|error| SessionError::Edit(format!("no se pudo leer «{name}»: {error}")))
 }
 
 /// Propuesta de arreglo: la versión más difícil, sin aplicarla todavía.
@@ -461,6 +545,12 @@ pub struct BarView {
     /// Es lo que decide cuándo la barra espaciadora salta al compás siguiente. Sin este
     /// dato el compás crecía sin límite y no había forma de avanzar escribiendo.
     pub is_full: bool,
+    /// Qué parte del compás está escrita, de 0 a 1 o más si se pasó.
+    ///
+    /// Al transcribir es fácil dejar un compás a medias sin darse cuenta —falta una
+    /// corchea y se sigue adelante—, y entonces lo que se escribe después acaba dentro
+    /// del compás incompleto. Mostrarlo evita ese lío antes de que ocurra.
+    pub filled: f64,
 }
 
 /// Resumen de un pulso para la interfaz.

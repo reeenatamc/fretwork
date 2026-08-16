@@ -46,6 +46,7 @@ interface BarView {
   numerator: number;
   denominator: number;
   is_full: boolean;
+  filled: number;
 }
 
 /** Cuántas cuerdas tiene la guitarra. De momento fijo; saldrá de la afinación en M3. */
@@ -71,6 +72,8 @@ export class Editor {
   private slots = 4;
   /** Si las figuras del compás actual ya suman el compás entero. */
   private barIsFull = false;
+  /** Qué parte del compás actual está escrita, de 0 a 1 o más. */
+  private barFilled = 0;
   /** Último error mostrado, para que la autocomprobación pueda leerlo. */
   lastError = '';
   private readonly frets = new FretAccumulator();
@@ -137,6 +140,16 @@ export class Editor {
   /** Reproduce o pausa la partitura que se está mostrando. */
   play(): void {
     this.api?.playPause();
+  }
+
+  /**
+   * Sustituye el banco de sonidos por uno cargado desde disco.
+   *
+   * El que trae alphaTab es pequeño a propósito y sus muestras de guitarra suenan
+   * delgadas; con un banco dedicado la diferencia se oye de inmediato.
+   */
+  loadSoundFont(data: Uint8Array): void {
+    this.api?.loadSoundFont(data, false);
   }
 
   /** Devuelve el AlphaTex actual. Lo usa la autocomprobación. */
@@ -311,6 +324,7 @@ export class Editor {
       this.bar = view.beats;
       this.slots = Math.max(1, view.numerator);
       this.barIsFull = view.is_full;
+      this.barFilled = view.filled;
     } catch (error) {
       this.bar = [];
       this.lastError = formatError(error);
@@ -366,6 +380,22 @@ export class Editor {
     this.gridHost.innerHTML = rows.join('');
   }
 
+  /**
+   * Estado de llenado del compás actual.
+   *
+   * Dejar un compás a medias sin darse cuenta es fácil al transcribir, y entonces lo que
+   * se escribe después acaba metido dentro del compás incompleto. Verlo mientras se
+   * escribe evita el enredo en lugar de tener que deshacerlo.
+   */
+  private fillLabel(): string {
+    if (this.bar.length === 0) return '<span class="fill-empty">compás vacío</span>';
+    if (this.barFilled > 1.001) {
+      return `<span class="fill-over">se pasa ${Math.round(this.barFilled * 100)} %</span>`;
+    }
+    if (this.barIsFull) return '<span class="fill-ok">compás completo</span>';
+    return `<span class="fill-partial">falta ${Math.round((1 - this.barFilled) * 100)} %</span>`;
+  }
+
   /** Cada cuántas columnas cae un tiempo fuerte. */
   private beatsPerPulse(): number {
     return Math.max(1, Math.round(this.bar.length / this.slots)) || 1;
@@ -377,6 +407,7 @@ export class Editor {
       `compás <b>${this.cursor.bar + 1}</b> de ${this.view?.bar_count ?? '?'}`,
       `cuerda <b>${this.cursor.string}ª</b>`,
       `figura <b>1/${this.duration}${dotted}</b>`,
+      this.fillLabel(),
       `<kbd>↑↓</kbd> cuerda <kbd>←→</kbd> pulso <kbd>0-9</kbd> traste <kbd>F4</kbd> bucle`,
     ];
     if (this.status) parts.push(this.status);
