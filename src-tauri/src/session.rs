@@ -292,7 +292,7 @@ pub fn session_bar_notes(
 pub fn session_save(state: tauri::State<'_, AppState>) -> Result<String, SessionError> {
     let root = state.root_path()?;
     state.with_session(|session| {
-        crate::storage::save(&root, &session.score)
+        crate::storage::save(&root, &mut session.score)
             .map_err(|error| SessionError::Edit(error.to_string()))
     })
 }

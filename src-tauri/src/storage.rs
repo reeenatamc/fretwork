@@ -104,16 +104,28 @@ fn songs_dir(root: &Path) -> Result<PathBuf, StorageError> {
 
 /// Guarda una partitura y devuelve el nombre de archivo usado.
 ///
+/// Volver a guardar sobre una canción que ya existe conserva su identificador: el archivo
+/// sigue siendo la misma canción aunque se haya reabierto en otra sesión. Sin esto, cada
+/// guardado estrenaba identificador y el historial de git se llenaba de cambios que no
+/// decían nada de la música.
+///
 /// # Errors
 ///
 /// Falla si el título no da un nombre válido o si no se puede escribir.
-pub fn save(root: &Path, score: &Score) -> Result<String, StorageError> {
+pub fn save(root: &Path, score: &mut Score) -> Result<String, StorageError> {
     let slug = slugify(&score.meta.title);
     if slug.is_empty() {
         return Err(StorageError::EmptyName);
     }
 
     let path = songs_dir(root)?.join(format!("{slug}.json"));
+
+    // Un archivo que no está o que no se puede leer no es un error aquí: simplemente no
+    // hay identificador que conservar y se guarda con el de la sesión.
+    if let Ok(existing) = load(root, &slug) {
+        score.id = existing.id;
+    }
+
     let json = serde_json::to_string_pretty(score).map_err(|error| StorageError::Malformed {
         path: path.display().to_string(),
         reason: error.to_string(),
@@ -221,9 +233,9 @@ mod tests {
     fn un_titulo_sin_letras_no_da_nombre() {
         assert_eq!(slugify("¿¡...!?"), "");
         let root = temp_root("sin-nombre");
-        let score = Score::new("¿¡...!?", 1);
+        let mut score = Score::new("¿¡...!?", 1);
         assert!(matches!(
-            save(&root, &score).unwrap_err(),
+            save(&root, &mut score).unwrap_err(),
             StorageError::EmptyName
         ));
     }
@@ -235,7 +247,7 @@ mod tests {
         score.meta.artist = Some("The Beatles".to_owned());
         score.meta.tempo_bpm = 96.0;
 
-        let slug = save(&root, &score).unwrap();
+        let slug = save(&root, &mut score).unwrap();
         assert_eq!(slug, "blackbird");
 
         let loaded = load(&root, &slug).unwrap();
@@ -246,10 +258,33 @@ mod tests {
     }
 
     #[test]
+    fn volver_a_guardar_la_misma_cancion_no_le_cambia_el_identificador() {
+        // Reabrir una canción en otra sesión no la convierte en otra canción. Cuando cada
+        // guardado estrenaba identificador, el archivo salía modificado en git aunque no
+        // se hubiera tocado ni una nota.
+        let root = temp_root("identificador-estable");
+        let mut primera = Score::new("Blackbird", 4);
+        let slug = save(&root, &mut primera).unwrap();
+
+        let mut segunda = Score::new("Blackbird", 4);
+        assert_ne!(
+            segunda.id, primera.id,
+            "cada sesión nace con su identificador"
+        );
+
+        save(&root, &mut segunda).unwrap();
+        assert_eq!(
+            segunda.id, primera.id,
+            "al guardar se adopta el del archivo"
+        );
+        assert_eq!(load(&root, &slug).unwrap().id, primera.id);
+    }
+
+    #[test]
     fn el_json_guardado_es_legible_para_git() {
         let root = temp_root("legible");
-        let score = Score::new("Prueba", 2);
-        save(&root, &score).unwrap();
+        let mut score = Score::new("Prueba", 2);
+        save(&root, &mut score).unwrap();
 
         let json = std::fs::read_to_string(root.join("songs").join("prueba.json")).unwrap();
         assert!(
@@ -263,7 +298,7 @@ mod tests {
         // Un archivo lleno de `"repeat_start": false` entierra el cambio de verdad cuando
         // se lee un `git diff`, que es justamente para lo que existen estos archivos.
         let root = temp_root("compacto");
-        save(&root, &Score::new("Prueba", 16)).unwrap();
+        save(&root, &mut Score::new("Prueba", 16)).unwrap();
 
         let json = std::fs::read_to_string(root.join("songs").join("prueba.json")).unwrap();
         for noise in [
@@ -290,7 +325,7 @@ mod tests {
         let root = temp_root("defectos");
         let mut score = Score::new("Prueba", 2);
         score.master_bars[1].repeat_start = true;
-        save(&root, &score).unwrap();
+        save(&root, &mut score).unwrap();
 
         let loaded = load(&root, "prueba").unwrap();
         assert!(
@@ -307,7 +342,7 @@ mod tests {
     fn se_listan_las_canciones_ordenadas_por_titulo() {
         let root = temp_root("listado");
         for title in ["Zorro", "Alba", "Manzana"] {
-            save(&root, &Score::new(title, 1)).unwrap();
+            save(&root, &mut Score::new(title, 1)).unwrap();
         }
 
         let songs = list(&root).unwrap();
@@ -318,7 +353,7 @@ mod tests {
     #[test]
     fn un_archivo_corrupto_no_tumba_el_listado() {
         let root = temp_root("corrupto");
-        save(&root, &Score::new("Buena", 1)).unwrap();
+        save(&root, &mut Score::new("Buena", 1)).unwrap();
         std::fs::write(root.join("songs").join("rota.json"), "{ esto no es json").unwrap();
 
         let songs = list(&root).unwrap();
