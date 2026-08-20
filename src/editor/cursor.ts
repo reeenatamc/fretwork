@@ -89,3 +89,21 @@ export function moveToBar(cursor: Cursor, bar: number, bounds: CursorBounds): Cu
   const clamped = Math.min(bounds.barCount - 1, Math.max(0, bar));
   return { ...cursor, bar: clamped, beat: 0 };
 }
+
+/**
+ * Lleva el cursor a un pulso concreto de un compás concreto.
+ *
+ * Lo usa el seguimiento de la reproducción: alphaTab dice qué pulso está sonando y el
+ * cursor se planta ahí. Se recorta a lo que existe porque la partitura que suena puede
+ * ser una versión anterior a la que ya se está editando.
+ */
+export function moveToBeat(
+  cursor: Cursor,
+  bar: number,
+  beat: number,
+  bounds: CursorBounds,
+): Cursor {
+  const clampedBar = Math.min(bounds.barCount - 1, Math.max(0, bar));
+  const clampedBeat = Math.max(0, beat);
+  return { ...cursor, bar: clampedBar, beat: clampedBeat };
+}

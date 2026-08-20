@@ -595,3 +595,13 @@ kbd {
     width: auto;
   }
 }
+
+/*
+ * Cuando la partitura suena, el cursor sigue a la música en vez de a las manos. Cambiarle
+ * el color lo dice sin necesidad de leer la barra de estado.
+ */
+.cell.cursor.playing {
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: 0 0 0 1px var(--ink);
+}

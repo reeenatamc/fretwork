@@ -15,6 +15,7 @@ import {
   moveBeat,
   moveString,
   moveToBar,
+  moveToBeat,
   toAddr,
 } from './cursor';
 import { FretAccumulator, type Intent, interpret, stepDuration } from './keymap';
@@ -64,6 +65,21 @@ const STRING_NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
  */
 const STRING_WEIGHTS = ['1px', '1px', '1.5px', '2px', '2.5px', '3px'];
 
+/**
+ * Aviso mientras el banco de sonidos no está listo.
+ *
+ * El sintetizador tarda un momento en arrancar y, hasta entonces, pulsar Intro no hacía
+ * nada: parecía que el audio estuviera roto en vez de cargándose.
+ */
+const SOUND_LOADING = 'el sonido aún se está cargando';
+
+/**
+ * Volumen del metrónomo.
+ *
+ * A tope tapa a la guitarra, que es justo lo que se está intentando oír.
+ */
+const METRONOME_VOLUME = 0.7;
+
 export class Editor {
   private view: SessionView | null = null;
   private cursor: Cursor = createCursor();
@@ -81,6 +97,16 @@ export class Editor {
   private duration = 4;
   private dots = 0;
   private status = '';
+  /** Si la partitura está sonando ahora mismo. */
+  private playing = false;
+  /** Si lo que se muestra es un arreglo propuesto y no la partitura de la sesión. */
+  private previewing = false;
+  /** Dónde estaba el cursor al dar al play, para volver ahí al terminar. */
+  private resumeCursor: Cursor | null = null;
+  /** Compás que se está repitiendo en bucle, o `null` si no hay bucle. */
+  private loopBar: number | null = null;
+  /** Si el metrónomo está sonando. */
+  private metronome = false;
 
   constructor(
     private readonly scoreHost: HTMLElement,
@@ -96,7 +122,14 @@ export class Editor {
       player: {
         playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
         soundFont: '/soundfont/sonivox.sf3',
-        scrollMode: alphaTab.ScrollMode.Off,
+        // Durante la reproducción sí interesa el cursor de alphaTab: marca el compás y el
+        // pulso dentro de la partitura grabada, que es donde se mira al repasar.
+        enableCursor: true,
+        enableAnimatedBeatCursor: true,
+        // El scroll ocurre dentro del panel de la partitura, nunca arrastrando la ventana.
+        scrollMode: alphaTab.ScrollMode.Continuous,
+        scrollElement: this.scoreHost,
+        scrollOffsetY: -20,
       },
     });
 
@@ -104,6 +137,18 @@ export class Editor {
       title,
       barCount,
       tempoBpm: tempo,
+    });
+
+    this.api.playedBeatChanged.on((beat) => this.followPlayback(beat));
+    this.api.playerStateChanged.on((args) => this.onPlayerState(args));
+    // Cada edición vuelve a cargar la partitura y con ella los pulsos MIDI cambian de
+    // sitio; el bucle se recoloca para seguir cubriendo el compás que se está repitiendo.
+    this.api.scoreLoaded.on(() => this.applyLoop());
+    this.api.playerReady.on(() => {
+      // Sólo se dice algo si alguien intentó sonar antes de tiempo. Si no, sobra.
+      if (this.status !== SOUND_LOADING) return;
+      this.status = 'sonido listo';
+      this.renderStatus();
     });
 
     await this.refresh();
@@ -134,12 +179,109 @@ export class Editor {
    * dar por bueno sin oírlo.
    */
   showPreview(tex: string): void {
+    this.previewing = true;
     this.api?.tex(tex);
   }
 
-  /** Reproduce o pausa la partitura que se está mostrando. */
+  /**
+   * Suena desde el compás en el que está el cursor.
+   *
+   * Empezar siempre por el principio no sirve al transcribir: quien está sacando el
+   * compás treinta quiere oír el treinta, no los veintinueve de antes. Al pausar y volver
+   * a dar, el compás se repite entero desde su principio, que es lo que se quiere para
+   * comprobar lo que se acaba de escribir.
+   */
   play(): void {
-    this.api?.playPause();
+    if (!this.api || !this.soundIsReady()) return;
+
+    if (this.playing) {
+      this.api.playPause();
+      return;
+    }
+
+    // La propuesta de arreglo se escucha entera: es otra versión de la canción y sus
+    // compases no tienen por qué caer donde los de la sesión.
+    if (!this.previewing) {
+      // Dar al play sale del bucle: para repetir un compás está Mayúsculas+Intro.
+      this.setLoopBar(null);
+      const ticks = this.barTicks(this.cursor.bar);
+      if (ticks) this.api.tickPosition = ticks.startTick;
+    }
+
+    this.api.play();
+  }
+
+  /**
+   * Repite sin parar el compás en el que está el cursor.
+   *
+   * Es el equivalente al bucle A–B del vídeo, pero del lado de la partitura: se compara
+   * el compás recién escrito con la grabación tantas veces como haga falta sin tocar nada.
+   */
+  toggleBarLoop(): void {
+    if (!this.api || !this.soundIsReady()) return;
+
+    if (this.loopBar !== null) {
+      this.setLoopBar(null);
+      this.api.stop();
+      this.status = 'bucle quitado';
+      return;
+    }
+
+    const ticks = this.barTicks(this.cursor.bar);
+    if (!ticks) {
+      this.status = 'ese compás todavía no está en la partitura';
+      return;
+    }
+
+    this.setLoopBar(this.cursor.bar);
+    this.api.tickPosition = ticks.startTick;
+    this.api.play();
+    this.status = `bucle en el compás ${this.cursor.bar + 1}`;
+  }
+
+  /** Enciende o apaga el metrónomo. Ayuda a colocar el ritmo de lo que se escribe. */
+  toggleMetronome(): void {
+    if (!this.api) return;
+    this.metronome = !this.metronome;
+    this.api.metronomeVolume = this.metronome ? METRONOME_VOLUME : 0;
+    this.status = this.metronome ? 'metrónomo encendido' : 'metrónomo apagado';
+  }
+
+  /** Guarda qué compás se repite y se lo pasa al reproductor. */
+  private setLoopBar(bar: number | null): void {
+    this.loopBar = bar;
+    this.applyLoop();
+  }
+
+  /** Traslada el bucle al reproductor, recalculando los pulsos del compás. */
+  private applyLoop(): void {
+    if (!this.api) return;
+    const ticks = this.loopBar === null ? null : this.barTicks(this.loopBar);
+    this.api.playbackRange = ticks;
+    this.api.isLooping = ticks !== null;
+  }
+
+  /**
+   * Principio y final del compás en pulsos MIDI.
+   *
+   * Devuelve `null` si ese compás todavía no existe en la partitura renderizada, que pasa
+   * mientras se escribe más allá del final.
+   */
+  private barTicks(bar: number): { startTick: number; endTick: number } | null {
+    const masterBar = this.api?.score?.masterBars[bar];
+    if (!masterBar) return null;
+    return {
+      startTick: masterBar.start,
+      endTick: masterBar.start + masterBar.calculateDuration(),
+    };
+  }
+
+  /** Avisa de que el sintetizador aún no está listo, en vez de no hacer nada. */
+  private soundIsReady(): boolean {
+    if (this.api?.isReadyForPlayback) return true;
+    this.status = SOUND_LOADING;
+    this.renderStatus();
+    return false;
   }
 
   /**
@@ -293,7 +435,15 @@ export class Editor {
         break;
 
       case 'play':
-        this.api?.playPause();
+        this.play();
+        break;
+
+      case 'loopBar':
+        this.toggleBarLoop();
+        break;
+
+      case 'toggleMetronome':
+        this.toggleMetronome();
         break;
     }
 
@@ -313,14 +463,20 @@ export class Editor {
 
   private async refresh(): Promise<void> {
     if (this.view && this.api) {
+      this.previewing = false;
       this.api.tex(this.view.tex);
     }
     await this.loadBar();
   }
 
   private async loadBar(): Promise<void> {
+    // Al seguir la reproducción se piden compases más deprisa de lo que Rust contesta.
+    // Si mientras tanto el cursor ya se fue a otro compás, la respuesta vieja se tira:
+    // pintarla dejaría la rejilla mostrando un compás que ya no es el que suena.
+    const requested = this.cursor.bar;
     try {
-      const view = await invoke<BarView>('session_bar_notes', { bar: this.cursor.bar });
+      const view = await invoke<BarView>('session_bar_notes', { bar: requested });
+      if (this.cursor.bar !== requested) return;
       this.bar = view.beats;
       this.slots = Math.max(1, view.numerator);
       this.barIsFull = view.is_full;
@@ -329,6 +485,53 @@ export class Editor {
       this.bar = [];
       this.lastError = formatError(error);
     }
+    this.render();
+  }
+
+  /**
+   * Lleva el cursor al pulso que está sonando.
+   *
+   * La rejilla es donde se mira al escribir, así que al escuchar tiene que enseñar el
+   * compás que suena y no el que se estaba editando. Que el cursor de edición sea el
+   * mismo que sigue a la música tiene una ventaja al transcribir: se para el reproductor
+   * donde falla la transcripción y ya se está escribiendo justo ahí.
+   */
+  private followPlayback(beat: alphaTab.model.Beat): void {
+    // Mientras se escucha un arreglo propuesto, la partitura que suena no es la de la
+    // sesión: seguirla movería el cursor a compases que no se corresponden con la rejilla.
+    if (this.previewing) return;
+
+    const bar = beat.voice?.bar?.index ?? 0;
+    const changedBar = bar !== this.cursor.bar;
+
+    // Con el cursor moviéndose solo, los dos dígitos seguidos de un traste dejan de tener
+    // sentido: el segundo caería en otro pulso.
+    this.frets.reset();
+    this.cursor = moveToBeat(this.cursor, bar, beat.index, this.bounds());
+
+    if (changedBar) void this.loadBar();
+    else this.render();
+  }
+
+  /**
+   * Arranque y parada del reproductor.
+   *
+   * Al parar del todo —final de la canción o stop— el cursor vuelve a donde se estaba
+   * escribiendo. En pausa se queda donde sonaba, que es lo que se quiere cuando se para
+   * para corregir un pasaje.
+   */
+  private onPlayerState(args: alphaTab.synth.PlayerStateChangedEventArgs): void {
+    const playing = args.state === alphaTab.synth.PlayerState.Playing;
+
+    if (playing && !this.playing) {
+      this.resumeCursor = { ...this.cursor };
+    } else if (!playing && args.stopped && this.resumeCursor) {
+      this.cursor = this.resumeCursor;
+      this.resumeCursor = null;
+      void this.loadBar();
+    }
+
+    this.playing = playing;
     this.render();
   }
 
@@ -365,6 +568,9 @@ export class Editor {
 
         const classes = ['cell'];
         if (isCursor) classes.push('cursor');
+        // Sonando, el cursor cambia de color: deja claro que se está moviendo solo y que
+        // lo que se teclee caerá donde vaya la música.
+        if (isCursor && this.playing) classes.push('playing');
         if (note) classes.push('has-note');
         // Marca de tiempo fuerte, para no perder la referencia rítmica al escribir.
         if (index > 0 && index % this.beatsPerPulse() === 0) classes.push('downbeat');
@@ -408,8 +614,11 @@ export class Editor {
       `cuerda <b>${this.cursor.string}ª</b>`,
       `figura <b>1/${this.duration}${dotted}</b>`,
       this.fillLabel(),
-      `<kbd>↑↓</kbd> cuerda <kbd>←→</kbd> pulso <kbd>0-9</kbd> traste <kbd>F4</kbd> bucle`,
+      `<kbd>↑↓</kbd> cuerda <kbd>←→</kbd> pulso <kbd>0-9</kbd> traste <kbd>Intro</kbd> sonar`,
     ];
+    if (this.playing) parts.push('<span class="fill-ok">▶ sonando</span>');
+    if (this.loopBar !== null) parts.push(`⟲ compás <b>${this.loopBar + 1}</b>`);
+    if (this.metronome) parts.push('♩ metrónomo');
     if (this.status) parts.push(this.status);
 
     this.statusHost.innerHTML = parts.join('<span class="sep">·</span>');

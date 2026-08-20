@@ -52,9 +52,17 @@ they never collide with note entry.
 | `0`–`9` | fret; two digits in a row give 10 to 24 |
 | `+` `−` `.` | shorter, longer, dotted |
 | `H` `V` `P` `G` `X` `A` `L` `S` | slur, vibrato, muted, ghost, dead, accent, let ring, staccato |
+| `Enter` | play the score from the bar you are on |
+| ⇧+`Enter` | loop that bar until you press it again |
+| `M` | metronome |
 | `F1`–`F4` | video: play, back 3s, half speed, A-B loop |
 
 The A-B loop is one key: press to open, press to close, press to clear.
+
+Playback starts where you are working, not at the top of the piece: when you are
+working out bar thirty you want to hear bar thirty. While it plays, the writing grid
+follows the music, so pausing leaves you writing exactly where the transcription
+broke down.
 
 ## Status
 
@@ -65,7 +73,7 @@ save.
 | --- | --- | --- |
 | M0 | Tauri + alphaTab + YouTube spike | done |
 | M1 | Data model and serialisation | done |
-| M2 | Fast capture | in progress: keyboard, video and saving work; fretboard and synced cursor pending |
+| M2 | Fast capture | in progress: keyboard, video, saving and the synced playback cursor work; clickable fretboard pending |
 | M3 | Repertoire, progress and printing | pending |
 | M4 | Difficulty scoring | pending |
 | M5 | Transformation engine | pending |

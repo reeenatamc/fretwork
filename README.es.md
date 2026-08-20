@@ -51,7 +51,7 @@ teclado y se guarda.
 |---|---|---|
 | M0 | Verificación de Tauri + alphaTab + YouTube | ✅ completado |
 | M1 | Modelo de datos y serialización | ✅ completado |
-| M2 | Captura rápida | 🚧 teclado, vídeo y guardado listos; falta diapasón y cursor sincronizado |
+| M2 | Captura rápida | 🚧 teclado, vídeo, guardado y cursor de reproducción listos; falta el diapasón clicable |
 | M3 | Repertorio, progreso e impresión | pendiente |
 | M4 | Puntuación de dificultad | pendiente |
 | M5 | Motor de transformación | pendiente |
@@ -74,9 +74,17 @@ no chocar con la escritura de notas.
 | <kbd>R</kbd> | silencio |
 | <kbd>Retroceso</kbd> / <kbd>⇧ Retroceso</kbd> | borrar nota / quitar el pulso entero |
 | <kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>S</kbd> | deshacer / guardar |
+| <kbd>Intro</kbd> | sonar desde el compás en el que estás |
+| <kbd>⇧</kbd>+<kbd>Intro</kbd> | repetir ese compás en bucle hasta volver a pulsar |
+| <kbd>M</kbd> | metrónomo |
 | <kbd>F1</kbd> <kbd>F2</kbd> <kbd>F3</kbd> <kbd>F4</kbd> | vídeo: reproducir, −3 s, media velocidad, bucle A–B |
 
 El bucle A–B se marca con una sola tecla: una pulsación abre, otra cierra, otra lo quita.
+
+La partitura suena desde donde estás trabajando, no desde el principio de la pieza:
+quien está sacando el compás treinta quiere oír el treinta. Mientras suena, la rejilla
+de escritura sigue a la música, así que al pausar te quedas escribiendo justo donde se
+atascó la transcripción.
 
 ## Cómo está hecho
 

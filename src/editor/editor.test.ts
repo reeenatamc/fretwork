@@ -8,7 +8,15 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { extractVideoId } from '../player/youtube';
-import { type CursorBounds, createCursor, moveBeat, moveString, moveToBar, toAddr } from './cursor';
+import {
+  type CursorBounds,
+  createCursor,
+  moveBeat,
+  moveString,
+  moveToBar,
+  moveToBeat,
+  toAddr,
+} from './cursor';
 import { DURATIONS, FretAccumulator, interpret, stepDuration } from './keymap';
 
 /** Compases de 4 pulsos y guitarra de 6 cuerdas. */
@@ -77,6 +85,19 @@ describe('cursor', () => {
   it('saltar a un compás fuera de rango se queda en el borde', () => {
     assert.equal(moveToBar(createCursor(), 99, bounds).bar, 3);
     assert.equal(moveToBar(createCursor(), -5, bounds).bar, 0);
+  });
+
+  it('seguir a la reproducción planta el cursor en el pulso que suena', () => {
+    const cursor = { bar: 0, beat: 0, string: 3, voice: 0 };
+    const following = moveToBeat(cursor, 2, 1, bounds);
+    assert.deepEqual(following, { bar: 2, beat: 1, string: 3, voice: 0 });
+  });
+
+  it('un pulso que ya no existe no saca el cursor de la partitura', () => {
+    // Lo que suena puede ser una versión anterior a la que se está editando.
+    assert.equal(moveToBeat(createCursor(), 40, 0, bounds).bar, 3);
+    assert.equal(moveToBeat(createCursor(), -1, -1, bounds).bar, 0);
+    assert.equal(moveToBeat(createCursor(), -1, -1, bounds).beat, 0);
   });
 
   it('la dirección para Rust lleva pista, pentagrama y voz', () => {
@@ -162,6 +183,18 @@ describe('acumulador de trastes', () => {
     const frets = new FretAccumulator();
     assert.equal(frets.push(0, 1000), 0);
     assert.equal(frets.push(5, 1100), 5, 'no sale 5 combinado con el cero');
+  });
+});
+
+describe('teclas del reproductor', () => {
+  it('Intro suena y Mayúsculas+Intro repite el compás', () => {
+    assert.deepEqual(interpret(key({ key: 'Enter' })), { type: 'play' });
+    assert.deepEqual(interpret(key({ key: 'Enter', shiftKey: true })), { type: 'loopBar' });
+  });
+
+  it('la eme enciende el metrónomo', () => {
+    assert.deepEqual(interpret(key({ key: 'm' })), { type: 'toggleMetronome' });
+    assert.deepEqual(interpret(key({ key: 'M' })), { type: 'toggleMetronome' });
   });
 });
 

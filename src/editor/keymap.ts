@@ -37,7 +37,9 @@ export type Intent =
   | { type: 'toggleTechnique'; bit: number }
   | { type: 'undo' }
   | { type: 'redo' }
-  | { type: 'play' };
+  | { type: 'play' }
+  | { type: 'loopBar' }
+  | { type: 'toggleMetronome' };
 
 /** Letras que activan técnicas. */
 const TECHNIQUE_KEYS: Record<string, number> = {
@@ -102,7 +104,9 @@ export function interpret(event: KeyboardEvent): Intent | null {
     case '.':
       return { type: 'toggleDot' };
     case 'Enter':
-      return { type: 'play' };
+      // Con Mayúsculas, en vez de sonar del tirón se repite el compás actual: al sacar un
+      // pasaje de oído se escucha el mismo compás una y otra vez.
+      return event.shiftKey ? { type: 'loopBar' } : { type: 'play' };
     default:
       break;
   }
@@ -113,6 +117,10 @@ export function interpret(event: KeyboardEvent): Intent | null {
 
   if (event.key.toLowerCase() === 'r') {
     return { type: 'setRest' };
+  }
+
+  if (event.key.toLowerCase() === 'm') {
+    return { type: 'toggleMetronome' };
   }
 
   const technique = TECHNIQUE_KEYS[event.key.toLowerCase()];
