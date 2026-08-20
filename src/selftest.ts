@@ -41,6 +41,22 @@ async function type(editor: Editor, sequence: string): Promise<void> {
   }
 }
 
+/**
+ * Espera a que se cumpla algo, con un tope.
+ *
+ * Un clic no se puede esperar como se espera a `onKey`: el manejador es asíncrono y quien
+ * lo dispara no recibe su promesa. Esperar un rato fijo daría una prueba que pasa o falla
+ * según lo cargada que esté la máquina, así que se espera a la condición y punto.
+ */
+async function until(condition: () => boolean, timeoutMs = 3000): Promise<boolean> {
+  const start = Date.now();
+  while (!condition()) {
+    if (Date.now() - start > timeoutMs) return false;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return true;
+}
+
 /** Antes y después del arreglo, para poder enseñarlo en el informe. */
 let arrangementDemo: { before: string; after: string; moves: unknown[] } | null = null;
 
@@ -149,6 +165,32 @@ export async function runSelfTest(
       editor.currentTex() !== beforeDelete,
       editor.currentTex() === beforeDelete ? 'no borró nada' : 'la nota desapareció',
     );
+    // ── Diapasón ─────────────────────────────────────────────────────────
+    // El clic pasa por el DOM de verdad: es la única forma de saber que el mástil que se
+    // dibuja y la partitura que se escribe hablan de la misma nota.
+    await press(editor, 'ArrowRight');
+    // El mástil se vuelve a dibujar entero en cada cambio, así que la casilla hay que
+    // buscarla otra vez: la de antes ya no cuelga del documento y su clic no llegaría.
+    const fret = () =>
+      document.querySelector<HTMLElement>('#fretboard [data-string="4"][data-fret="7"]');
+    fret()?.click();
+    const written = await until(() => editor.currentTex().includes('7.4'));
+    check(
+      'clic en el mástil',
+      written,
+      fret()
+        ? `el traste 7 de la 4ª cuerda: ${excerpt(editor.currentTex())}`
+        : 'no se dibujó el mástil',
+    );
+
+    fret()?.click();
+    const removed = await until(() => !editor.currentTex().includes('7.4'));
+    check(
+      'volver a pulsar quita la nota',
+      removed,
+      removed ? 'el segundo clic la borró' : `sigue ahí: ${excerpt(editor.currentTex())}`,
+    );
+
     // ── Guardar en disco ─────────────────────────────────────────────────
     // Es lo que impide perder una transcripción al cerrar la aplicación.
     const { invoke } = await import('@tauri-apps/api/core');

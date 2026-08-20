@@ -17,6 +17,7 @@ import {
   moveToBeat,
   toAddr,
 } from './cursor';
+import { fretboardHtml, inlayAt, LAST_FRET } from './fretboard';
 import { DURATIONS, FretAccumulator, interpret, isFormField, stepDuration } from './keymap';
 
 /** Compases de 4 pulsos y guitarra de 6 cuerdas. */
@@ -217,6 +218,43 @@ describe('teclas del reproductor', () => {
   it('la eme enciende el metrónomo', () => {
     assert.deepEqual(interpret(key({ key: 'm' })), { type: 'toggleMetronome' });
     assert.deepEqual(interpret(key({ key: 'M' })), { type: 'toggleMetronome' });
+  });
+});
+
+describe('diapasón', () => {
+  const neck = (cursorString: number, pressed: [number, number][] = []) =>
+    fretboardHtml({
+      stringCount: 6,
+      stringNames: ['e', 'B', 'G', 'D', 'A', 'E'],
+      cursorString,
+      pressed: new Map(pressed),
+    });
+
+  it('dibuja una casilla por cuerda y traste, la cejuela incluida', () => {
+    const html = neck(1);
+    const cells = html.match(/data-fret=/g) ?? [];
+    assert.equal(cells.length, 6 * (LAST_FRET + 1));
+    assert.ok(html.includes('data-string="6" data-fret="12"'), 'llega al traste 12');
+  });
+
+  it('la cuerda del cursor se distingue', () => {
+    assert.ok(neck(3).includes('class="neck-row here" data-string="3"'));
+    assert.ok(!neck(3).includes('class="neck-row here" data-string="4"'));
+  });
+
+  it('la nota pisada sale con su número y sólo ella', () => {
+    const html = neck(1, [[4, 7]]);
+    assert.ok(html.includes('data-string="4" data-fret="7" title="cuerda 4, traste 7">7<'));
+    // El resto del mástil va sin cifras: un mástil lleno de números no se lee como mástil.
+    const labelled = html.match(/>[0-9]+<\/button>/g) ?? [];
+    assert.equal(labelled.length, 1);
+  });
+
+  it('las marcas son las de cualquier guitarra', () => {
+    assert.equal(inlayAt(3), 'single');
+    assert.equal(inlayAt(9), 'single');
+    assert.equal(inlayAt(12), 'double');
+    assert.equal(inlayAt(4), 'none');
   });
 });
 

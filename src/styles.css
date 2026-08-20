@@ -605,3 +605,106 @@ kbd {
   color: var(--surface);
   box-shadow: 0 0 0 1px var(--ink);
 }
+
+/* ── Diapasón ───────────────────────────────────────────────────────────── */
+
+/*
+ * El mástil, debajo de la rejilla.
+ *
+ * Se dibuja como una guitarra vista de frente: la cejuela gruesa a la izquierda, las
+ * cuerdas cruzándolo de lado a lado y los trastes separándolo en casillas. Va compacto
+ * a propósito —filas de 17 px— porque lo que manda en el pie sigue siendo la rejilla de
+ * escritura: el mástil ayuda, no ocupa el sitio del trabajo.
+ */
+.fretboard {
+  margin-top: 8px;
+}
+
+.neck {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: linear-gradient(var(--paper-deep), var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 6px 2px;
+}
+
+.neck-row {
+  display: grid;
+  grid-template-columns: 22px repeat(var(--frets), minmax(18px, 1fr));
+  align-items: center;
+  height: 17px;
+  position: relative;
+}
+
+/* La cuerda cruza el mástil por detrás de las casillas. */
+.neck-row:not(.marks)::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--line-strong);
+  z-index: 0;
+}
+
+/* La fila donde está el cursor: es donde va a caer lo que se escriba. */
+.neck-row.here {
+  background: color-mix(in srgb, var(--amber) 22%, transparent);
+  border-radius: 4px;
+}
+
+.open-name {
+  color: var(--ink-soft);
+  text-align: center;
+  user-select: none;
+}
+
+.fret {
+  position: relative;
+  z-index: 1;
+  height: 15px;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* La cejuela: el traste al aire se separa del resto con la barra gruesa de la guitarra. */
+.fret.open {
+  border-left: 0;
+  border-right: 3px solid var(--line-strong);
+}
+
+.fret:hover {
+  background: color-mix(in srgb, var(--sky) 45%, transparent);
+}
+
+.fret.pressed {
+  background: var(--ink);
+  color: var(--surface);
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* Regla de trastes: los números que un guitarrista busca de verdad. */
+.neck-row.marks {
+  height: 13px;
+  color: var(--ink-soft);
+}
+
+.fret-mark {
+  text-align: center;
+  user-select: none;
+  font-size: 10px;
+}
+
+.fret-mark.single,
+.fret-mark.double {
+  color: var(--amber-deep);
+}

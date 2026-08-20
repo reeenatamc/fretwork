@@ -55,6 +55,7 @@ they never collide with note entry.
 | `Enter` | play the score from the bar you are on |
 | ⇧+`Enter` | loop that bar until you press it again |
 | `M` | metronome |
+| click on the neck | writes that note; the same fret again removes it |
 | `F1`–`F4` | video: play, back 3s, half speed, A-B loop |
 
 The A-B loop is one key: press to open, press to close, press to clear.
@@ -73,7 +74,7 @@ save.
 | --- | --- | --- |
 | M0 | Tauri + alphaTab + YouTube spike | done |
 | M1 | Data model and serialisation | done |
-| M2 | Fast capture | in progress: keyboard, video, saving and the synced playback cursor work; clickable fretboard pending |
+| M2 | Fast capture | done |
 | M3 | Repertoire, progress and printing | pending |
 | M4 | Difficulty scoring | pending |
 | M5 | Transformation engine | pending |

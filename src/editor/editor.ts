@@ -18,6 +18,7 @@ import {
   moveToBeat,
   toAddr,
 } from './cursor';
+import { fretboardHtml } from './fretboard';
 import { FretAccumulator, type Intent, interpret, stepDuration } from './keymap';
 
 interface SessionView {
@@ -117,6 +118,7 @@ export class Editor {
     private readonly scoreHost: HTMLElement,
     private readonly gridHost: HTMLElement,
     private readonly statusHost: HTMLElement,
+    private readonly fretboardHost: HTMLElement,
     private readonly isSuspended: () => boolean = () => false,
   ) {}
 
@@ -156,6 +158,8 @@ export class Editor {
       this.status = 'sonido listo';
       this.renderStatus();
     });
+
+    this.fretboardHost.addEventListener('click', (event) => void this.onFretClick(event));
 
     await this.refresh();
     window.addEventListener('keydown', (event) => void this.onKey(event));
@@ -363,13 +367,7 @@ export class Editor {
 
       case 'digit': {
         const fret = this.frets.push(intent.value, Date.now());
-        await this.send('session_apply_batch', {
-          commands: [
-            { kind: 'set_note', addr, string: this.cursor.string, fret },
-            { kind: 'set_duration', addr, duration: this.duration, dots: this.dots },
-          ],
-        });
-        this.status = `traste ${fret} en la ${this.cursor.string}ª cuerda`;
+        await this.writeFret(this.cursor.string, fret);
         break;
       }
 
@@ -453,6 +451,58 @@ export class Editor {
       case 'toggleMetronome':
         this.toggleMetronome();
         break;
+    }
+
+    this.render();
+  }
+
+  /**
+   * Pone un traste en una cuerda del pulso actual.
+   *
+   * La figura va en la misma operación que la nota: si se mandaran por separado, deshacer
+   * dejaría la nota escrita con la duración de antes.
+   */
+  private async writeFret(string: number, fret: number): Promise<void> {
+    const addr = toAddr(this.cursor);
+    await this.send('session_apply_batch', {
+      commands: [
+        { kind: 'set_note', addr, string, fret },
+        { kind: 'set_duration', addr, duration: this.duration, dots: this.dots },
+      ],
+    });
+    this.status = `traste ${fret} en la ${string}ª cuerda`;
+  }
+
+  /**
+   * Escribe el traste que se ha pulsado con el ratón en el mástil.
+   *
+   * Volver a pulsar la misma nota la quita: buscando una posición con los dedos se falla
+   * y se corrige, y tener que ir al teclado a borrar rompe justo eso.
+   */
+  private async onFretClick(event: MouseEvent): Promise<void> {
+    const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-fret]');
+    if (!target || this.isSuspended()) return;
+
+    const string = Number(target.dataset.string);
+    const fret = Number(target.dataset.fret);
+    if (!Number.isInteger(string) || !Number.isInteger(fret)) return;
+
+    // El foco vuelve al documento: después de un clic hay que poder seguir escribiendo sin
+    // tener que pinchar en ningún sitio.
+    target.blur();
+
+    // El acumulador de dos cifras se corta: el clic ya dijo qué traste era.
+    this.frets.reset();
+    this.cursor = { ...this.cursor, string };
+
+    const current = this.noteAtCursor();
+    if (current?.fret === fret) {
+      await this.send('session_apply', {
+        command: { kind: 'clear_string', addr: toAddr(this.cursor), string },
+      });
+      this.status = `quitada la nota de la ${string}ª cuerda`;
+    } else {
+      await this.writeFret(string, fret);
     }
 
     this.render();
@@ -551,10 +601,26 @@ export class Editor {
     return this.beatAtCursor()?.notes.find((note) => note.string === this.cursor.string);
   }
 
-  /** Pinta la rejilla del compás actual y la barra de estado. */
+  /** Pinta la rejilla del compás actual, el mástil y la barra de estado. */
   private render(): void {
     this.renderGrid();
+    this.renderFretboard();
     this.renderStatus();
+  }
+
+  /** Dibuja el mástil con las notas del pulso en el que está el cursor. */
+  private renderFretboard(): void {
+    const pressed = new Map<number, number>();
+    for (const note of this.beatAtCursor()?.notes ?? []) {
+      pressed.set(note.string, note.fret);
+    }
+
+    this.fretboardHost.innerHTML = fretboardHtml({
+      stringCount: STRING_COUNT,
+      stringNames: STRING_NAMES,
+      cursorString: this.cursor.string,
+      pressed,
+    });
   }
 
   private renderGrid(): void {

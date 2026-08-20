@@ -292,6 +292,7 @@ async function main(): Promise<void> {
     $('score'),
     $('grid'),
     $('status'),
+    $('fretboard'),
     () => !$('help').hidden || !$('panel').hidden,
   );
   await editor.start('Sin título', 16, 90);
