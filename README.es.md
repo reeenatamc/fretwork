@@ -52,7 +52,7 @@ teclado y se guarda.
 | M0 | Verificación de Tauri + alphaTab + YouTube | ✅ completado |
 | M1 | Modelo de datos y serialización | ✅ completado |
 | M2 | Captura rápida | ✅ completado |
-| M3 | Repertorio, progreso e impresión | pendiente |
+| M3 | Repertorio, progreso e impresión | ✅ completado |
 | M4 | Puntuación de dificultad | pendiente |
 | M5 | Motor de transformación | pendiente |
 | M6 | Asistencia por IA (opcional, desactivada por defecto) | pendiente |
@@ -74,10 +74,12 @@ no chocar con la escritura de notas.
 | <kbd>R</kbd> | silencio |
 | <kbd>Retroceso</kbd> / <kbd>⇧ Retroceso</kbd> | borrar nota / quitar el pulso entero |
 | <kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>S</kbd> | deshacer / guardar |
+| <kbd>Ctrl</kbd>+<kbd>O</kbd> / <kbd>Ctrl</kbd>+<kbd>P</kbd> | abrir el repertorio / imprimir la hoja |
 | <kbd>Intro</kbd> | sonar desde el compás en el que estás |
 | <kbd>⇧</kbd>+<kbd>Intro</kbd> | repetir ese compás en bucle hasta volver a pulsar |
 | <kbd>M</kbd> | metrónomo |
 | clic en el mástil | escribe esa nota; el mismo traste otra vez la quita |
+| <kbd>T</kbd> | marcar el compás como que se atraganta |
 | <kbd>F1</kbd> <kbd>F2</kbd> <kbd>F3</kbd> <kbd>F4</kbd> | vídeo: reproducir, −3 s, media velocidad, bucle A–B |
 
 El bucle A–B se marca con una sola tecla: una pulsación abre, otra cierra, otra lo quita.
@@ -92,13 +94,13 @@ atascó la transcripción.
 - **Rust** y **Tauri v2** para el núcleo y la ventana de escritorio.
 - **TypeScript** y **[alphaTab](https://alphatab.net)** para el renderizado de partituras, el
   sintetizador y la impresión.
-- **SQLite** local para el índice y los datos de práctica.
+- Archivos **JSON locales** para los datos de práctica.
 
 Las tablaturas se guardan como archivos JSON versionados en el propio repositorio: así hay copia
 de seguridad, historial de cómo evolucionó cada arreglo, y publicarlas es simplemente un push.
 
-Los datos de práctica — velocidades, compases donde me trabo, bitácora — se quedan en una base de
-datos local que nunca se sube.
+Los datos de práctica — a qué velocidad me sale hoy, qué compases se me atragantan — se quedan en
+archivos JSON locales que nunca se suben. Lo que se publica es la tablatura; cómo la llevo es mío.
 
 ## Instalación para desarrollo
 

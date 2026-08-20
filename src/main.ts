@@ -7,6 +7,14 @@
  */
 import { Editor } from './editor/editor';
 import { isFormField } from './editor/keymap';
+import {
+  emptyPractice,
+  type Practice,
+  type PracticeEntry,
+  STATUS_LABEL,
+  type Status,
+  tempoLabel,
+} from './library/practice';
 import { filterSongs, type SongCard } from './library/search';
 import { extractVideoId, YouTubePlayer } from './player/youtube';
 import { printTex } from './print/print';
@@ -56,9 +64,56 @@ async function save(): Promise<void> {
 /** Todo el repertorio, tal y como lo devolvió Rust la última vez. */
 let repertoire: SongCard[] = [];
 
+/** El progreso de cada canción, por nombre de archivo. */
+let progress = new Map<string, Practice>();
+
+/** Nombre de archivo de la canción abierta. Cambia al cambiar el título. */
+let openSlug = '';
+
+/**
+ * Marca o desmarca el compás como atragantado.
+ *
+ * Es lo que convierte «esta canción no me sale» en algo accionable: al sentarse a ensayar,
+ * lo que hace falta saber es qué compases repasar, no si la canción está hecha.
+ */
+async function toggleTricky(bar: number): Promise<void> {
+  try {
+    const slug = await invoke<string>('session_slug');
+    const practice = await invoke<Practice>('practice_toggle_bar', { slug, bar });
+    progress.set(slug, practice);
+    openSlug = slug;
+    editor.showTrickyBars(practice.tricky_bars);
+    notify(
+      practice.tricky_bars.includes(bar)
+        ? `compás ${bar + 1} marcado`
+        : `compás ${bar + 1} ya no se atraganta`,
+    );
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
+  }
+}
+
+/** Trae el progreso de la canción abierta y se lo enseña al editor. */
+async function loadProgress(): Promise<void> {
+  try {
+    openSlug = await invoke<string>('session_slug');
+    const practice = await invoke<Practice>('practice_get', { slug: openSlug });
+    progress.set(openSlug, practice);
+    editor.showTrickyBars(practice.tricky_bars);
+    showProgressControls(practice);
+  } catch {
+    // Sin progreso se sigue escribiendo igual: es información de más, no un requisito.
+  }
+}
+
 async function refreshLibrary(): Promise<void> {
   try {
-    repertoire = await invoke<SongCard[]>('session_list');
+    const [songs, practised] = await Promise.all([
+      invoke<SongCard[]>('session_list'),
+      invoke<PracticeEntry[]>('practice_all'),
+    ]);
+    repertoire = songs;
+    progress = new Map(practised.map((entry) => [entry.slug, entry.practice]));
     renderRepertoire();
   } catch {
     // Si el listado falla no pasa nada grave: se sigue pudiendo escribir y guardar.
@@ -80,13 +135,17 @@ function renderRepertoire(): void {
   $('repertoire').innerHTML = found
     .map((song) => {
       const tags = song.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+      const practice = progress.get(song.slug) ?? emptyPractice();
+      const tricky = practice.tricky_bars.length;
       return (
         `<li><button type="button" class="song" data-slug="${song.slug}">` +
         `<span class="song-title">${escapeHtml(song.title)}</span>` +
         `<span class="song-artist">${escapeHtml(song.artist ?? '')}</span>` +
         `<span class="song-tags">${tags}</span>` +
-        `<span class="song-bars">${song.bar_count} compases</span>` +
-        '</button></li>'
+        `<span class="song-status status-${practice.status}">${STATUS_LABEL[practice.status]}</span>` +
+        `<span class="song-tempo">${tempoLabel(practice, song.tempo_bpm)}` +
+        (tricky ? ` · ${tricky} compás(es) marcado(s)` : '') +
+        '</span></button></li>'
       );
     })
     .join('');
@@ -112,6 +171,7 @@ async function openSong(slug: string): Promise<void> {
     await invoke('session_open', { slug });
     await editor.reload();
     showMetaOf(slug);
+    await loadProgress();
     $('library').hidden = true;
     notify(`abierto ${slug}`);
   } catch (error) {
@@ -132,6 +192,39 @@ function showMetaOf(slug: string): void {
   $<HTMLInputElement>('artist').value = song.artist ?? '';
   $<HTMLInputElement>('bpm').value = String(Math.round(song.tempo_bpm));
   $<HTMLInputElement>('library-tags').value = song.tags.join(', ');
+}
+
+/** Pinta los controles de progreso con lo que hay guardado. */
+function showProgressControls(practice: Practice): void {
+  for (const button of $('status-dial').querySelectorAll('button')) {
+    button.setAttribute('aria-pressed', String(button.dataset.status === practice.status));
+  }
+  $<HTMLInputElement>('practice-tempo').value =
+    practice.tempo_bpm > 0 ? String(Math.round(practice.tempo_bpm)) : '';
+  $<HTMLInputElement>('practice-target').value =
+    practice.target_bpm > 0 ? String(Math.round(practice.target_bpm)) : '';
+  $('tricky-summary').textContent = practice.tricky_bars.length
+    ? `se atragantan los compases ${practice.tricky_bars.map((bar) => bar + 1).join(', ')}`
+    : 'ningún compás marcado';
+}
+
+/** Cambia una sola cosa del progreso y deja el resto como estaba. */
+async function setProgress(change: {
+  status?: Status;
+  tempoBpm?: number;
+  targetBpm?: number;
+}): Promise<void> {
+  try {
+    const slug = openSlug || (await invoke<string>('session_slug'));
+    const practice = await invoke<Practice>('practice_set', { slug, ...change });
+    openSlug = slug;
+    progress.set(slug, practice);
+    showProgressControls(practice);
+    editor.showTrickyBars(practice.tricky_bars);
+    renderRepertoire();
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
+  }
 }
 
 /** Guarda las etiquetas de la canción abierta. */
@@ -376,9 +469,15 @@ async function main(): Promise<void> {
 
   // Con un panel abierto el teclado es del panel, no de la partitura. Se pregunta por
   // los paneles que haya, no por una lista escrita a mano que se olvida de actualizar.
-  editor = new Editor($('score'), $('grid'), $('status'), $('fretboard'), () =>
-    Array.from(document.querySelectorAll<HTMLElement>('.panel')).some((panel) => !panel.hidden),
-  );
+  editor = new Editor({
+    scoreHost: $('score'),
+    gridHost: $('grid'),
+    statusHost: $('status'),
+    fretboardHost: $('fretboard'),
+    isSuspended: () =>
+      Array.from(document.querySelectorAll<HTMLElement>('.panel')).some((panel) => !panel.hidden),
+    onToggleTricky: (bar) => void toggleTricky(bar),
+  });
   await editor.start('Sin título', 16, 90);
 
   $('save').addEventListener('click', () => void save());
@@ -402,6 +501,16 @@ async function main(): Promise<void> {
     if (button?.dataset.slug) void openSong(button.dataset.slug);
   });
   $('library-tags').addEventListener('change', () => void applyTags());
+  $('status-dial').addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>('[data-status]');
+    if (button?.dataset.status) void setProgress({ status: button.dataset.status as Status });
+  });
+  $('practice-tempo').addEventListener('change', (event) => {
+    void setProgress({ tempoBpm: Number((event.target as HTMLInputElement).value) || 0 });
+  });
+  $('practice-target').addEventListener('change', (event) => {
+    void setProgress({ targetBpm: Number((event.target as HTMLInputElement).value) || 0 });
+  });
 
   $('yt-load').addEventListener('click', () => void loadVideo());
   $('yt-play').addEventListener('click', () => player?.toggle());
@@ -509,6 +618,7 @@ async function main(): Promise<void> {
 
   await refreshLibrary();
   await refreshSoundFonts();
+  await loadProgress();
 
   if (await invoke<boolean>('is_selftest')) {
     await runSelfTest(editor, (report) => invoke('save_diagnostics', { report }));

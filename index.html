@@ -86,6 +86,7 @@
               <dt><kbd>⇧</kbd>+<kbd>Retroceso</kbd></dt><dd>quitar el pulso entero</dd>
               <dt><kbd>Insert</kbd></dt><dd>insertar un pulso</dd>
               <dt>clic</dt><dd>en el mástil escribe esa nota; otra vez la quita</dd>
+              <dt><kbd>T</kbd></dt><dd>marcar el compás como que se atraganta</dd>
             </dl>
           </section>
 
@@ -166,6 +167,26 @@
         />
 
         <ul class="repertoire" id="repertoire"></ul>
+
+        <div class="progress-editor">
+          <span class="progress-label">Cómo va la canción abierta</span>
+          <div class="dial" id="status-dial">
+            <button type="button" data-status="sacando">sacándola</button>
+            <button type="button" data-status="ensayando">ensayando</button>
+            <button type="button" data-status="lista">lista</button>
+          </div>
+          <label class="tempo-field">
+            sale a
+            <input id="practice-tempo" class="narrow" type="number" min="0" max="300" />
+            BPM
+          </label>
+          <label class="tempo-field">
+            objetivo
+            <input id="practice-target" class="narrow" type="number" min="0" max="300" />
+            BPM
+          </label>
+          <span id="tricky-summary" class="tricky-summary"></span>
+        </div>
 
         <div class="tag-editor">
           <label for="library-tags">Etiquetas de la canción abierta</label>

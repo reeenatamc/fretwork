@@ -742,7 +742,7 @@ kbd {
 
 .song {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 3fr) auto;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) auto minmax(0, 2fr);
   gap: 10px;
   align-items: center;
   width: 100%;
@@ -807,4 +807,81 @@ kbd {
 .tag-editor label {
   color: var(--ink-soft);
   font-size: 12px;
+}
+
+/* ── Progreso ───────────────────────────────────────────────────────────── */
+
+/*
+ * Los controles de cómo va la canción abierta.
+ *
+ * Van en una sola línea con el resto del panel: el progreso se anota de paso, entre dos
+ * ensayos, y si pide navegar a otro sitio no se anota nunca.
+ */
+.progress-editor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.progress-label {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.tempo-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.tempo-field input {
+  width: 62px;
+}
+
+.tricky-summary {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+/* El estado se lee de un vistazo por el color, sin tener que leer la palabra. */
+.song-status {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.status-sacando {
+  background: var(--rose);
+  color: var(--rose-deep);
+}
+
+.status-ensayando {
+  background: var(--amber);
+  color: var(--amber-deep);
+}
+
+.status-lista {
+  background: var(--sage);
+  color: var(--sage-deep);
+}
+
+.song-tempo {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

@@ -81,6 +81,37 @@ const SOUND_LOADING = 'el sonido aún se está cargando';
  */
 const METRONOME_VOLUME = 0.7;
 
+/**
+ * Lo que el editor necesita de la página.
+ *
+ * Se recibe como un objeto y no como cinco parámetros sueltos porque ya iban seis y el
+ * orden empezaba a ser una trampa: dos `HTMLElement` seguidos se intercambian sin que el
+ * compilador diga nada.
+ */
+export interface EditorHosts {
+  /** Donde alphaTab dibuja la partitura. */
+  scoreHost: HTMLElement;
+  /** Donde va la rejilla del compás actual. */
+  gridHost: HTMLElement;
+  /** La barra de estado. */
+  statusHost: HTMLElement;
+  /** El mástil. */
+  fretboardHost: HTMLElement;
+  /**
+   * Si el teclado es de otro: un panel abierto, por ejemplo.
+   *
+   * Se recibe como función para que el editor no tenga que saber qué paneles existen.
+   */
+  isSuspended?: () => boolean;
+  /**
+   * Marca o desmarca el compás como atragantado.
+   *
+   * El editor sabe en qué compás está el cursor, pero el progreso no es cosa suya: lo
+   * avisa y quien lleva el progreso decide.
+   */
+  onToggleTricky?: (bar: number) => void;
+}
+
 export class Editor {
   private view: SessionView | null = null;
   private cursor: Cursor = createCursor();
@@ -108,23 +139,14 @@ export class Editor {
   private loopBar: number | null = null;
   /** Si el metrónomo está sonando. */
   private metronome = false;
+  /** Compases marcados como atragantados en esta canción. */
+  private trickyBars: readonly number[] = [];
 
-  /**
-   * @param isSuspended Si el teclado es de otro (un panel abierto, por ejemplo). Se recibe
-   *   como función para que el editor no tenga que saber qué paneles existen: con la ayuda
-   *   abierta, teclear escribía notas a ciegas detrás del panel.
-   */
-  constructor(
-    private readonly scoreHost: HTMLElement,
-    private readonly gridHost: HTMLElement,
-    private readonly statusHost: HTMLElement,
-    private readonly fretboardHost: HTMLElement,
-    private readonly isSuspended: () => boolean = () => false,
-  ) {}
+  constructor(private readonly ui: EditorHosts) {}
 
   /** Arranca el editor con una partitura nueva. */
   async start(title: string, barCount: number, tempo: number): Promise<void> {
-    this.api = new alphaTab.AlphaTabApi(this.scoreHost, {
+    this.api = new alphaTab.AlphaTabApi(this.ui.scoreHost, {
       core: { tex: true, fontDirectory: '/font/' },
       display: { scale: 0.9 },
       player: {
@@ -136,7 +158,7 @@ export class Editor {
         enableAnimatedBeatCursor: true,
         // El scroll ocurre dentro del panel de la partitura, nunca arrastrando la ventana.
         scrollMode: alphaTab.ScrollMode.Continuous,
-        scrollElement: this.scoreHost,
+        scrollElement: this.ui.scoreHost,
         scrollOffsetY: -20,
       },
     });
@@ -159,7 +181,7 @@ export class Editor {
       this.renderStatus();
     });
 
-    this.fretboardHost.addEventListener('click', (event) => void this.onFretClick(event));
+    this.ui.fretboardHost.addEventListener('click', (event) => void this.onFretClick(event));
 
     await this.refresh();
     window.addEventListener('keydown', (event) => void this.onKey(event));
@@ -304,6 +326,17 @@ export class Editor {
     this.api?.loadSoundFont(data, false);
   }
 
+  /**
+   * Recibe los compases que se atragantan en esta canción.
+   *
+   * El editor no los guarda ni decide cuáles son: sólo los enseña, para que al pasar por
+   * uno se vea sin tener que abrir el repertorio.
+   */
+  showTrickyBars(bars: readonly number[]): void {
+    this.trickyBars = bars;
+    this.render();
+  }
+
   /** Devuelve el AlphaTex actual. Lo usa la autocomprobación. */
   currentTex(): string {
     return this.view?.tex ?? '';
@@ -330,7 +363,7 @@ export class Editor {
 
   /** Procesa una tecla. Público para que la autocomprobación pueda simular pulsaciones. */
   async onKey(event: KeyboardEvent): Promise<void> {
-    if (this.isSuspended()) return;
+    if (this.ui.isSuspended?.()) return;
 
     const intent = interpret(event);
     if (!intent) return;
@@ -451,6 +484,10 @@ export class Editor {
       case 'toggleMetronome':
         this.toggleMetronome();
         break;
+
+      case 'toggleTricky':
+        this.ui.onToggleTricky?.(this.cursor.bar);
+        break;
     }
 
     this.render();
@@ -481,7 +518,7 @@ export class Editor {
    */
   private async onFretClick(event: MouseEvent): Promise<void> {
     const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-fret]');
-    if (!target || this.isSuspended()) return;
+    if (!target || this.ui.isSuspended?.()) return;
 
     const string = Number(target.dataset.string);
     const fret = Number(target.dataset.fret);
@@ -615,7 +652,7 @@ export class Editor {
       pressed.set(note.string, note.fret);
     }
 
-    this.fretboardHost.innerHTML = fretboardHtml({
+    this.ui.fretboardHost.innerHTML = fretboardHtml({
       stringCount: STRING_COUNT,
       stringNames: STRING_NAMES,
       cursorString: this.cursor.string,
@@ -657,7 +694,7 @@ export class Editor {
       );
     }
 
-    this.gridHost.innerHTML = rows.join('');
+    this.ui.gridHost.innerHTML = rows.join('');
   }
 
   /**
@@ -693,9 +730,12 @@ export class Editor {
     if (this.playing) parts.push('<span class="fill-ok">▶ sonando</span>');
     if (this.loopBar !== null) parts.push(`⟲ compás <b>${this.loopBar + 1}</b>`);
     if (this.metronome) parts.push('♩ metrónomo');
+    if (this.trickyBars.includes(this.cursor.bar)) {
+      parts.push('<span class="fill-over">✱ se atraganta</span>');
+    }
     if (this.status) parts.push(this.status);
 
-    this.statusHost.innerHTML = parts.join('<span class="sep">·</span>');
+    this.ui.statusHost.innerHTML = parts.join('<span class="sep">·</span>');
   }
 }
 

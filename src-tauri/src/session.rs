@@ -386,6 +386,101 @@ pub fn session_set_tags(
     })
 }
 
+/// Devuelve el nombre de archivo que le toca a la canción abierta.
+///
+/// El progreso se guarda por canción y la canción se identifica por su archivo, así que la
+/// interfaz necesita saber cuál es sin tener que repetir aquí las reglas del nombre.
+///
+/// # Errors
+///
+/// Falla si no hay sesión abierta.
+#[tauri::command]
+pub fn session_slug(state: tauri::State<'_, AppState>) -> Result<String, SessionError> {
+    state.with_session(|session| Ok(crate::storage::slugify(&session.score.meta.title)))
+}
+
+/// Lee el progreso de una canción.
+///
+/// # Errors
+///
+/// Falla si no se puede acceder a la carpeta de progreso.
+#[tauri::command]
+pub fn practice_get(
+    state: tauri::State<'_, AppState>,
+    slug: String,
+) -> Result<crate::practice::Practice, SessionError> {
+    let root = state.root_path()?;
+    crate::practice::load(&root, &slug).map_err(|error| SessionError::Edit(error.to_string()))
+}
+
+/// Cambia el estado o los tempos de una canción y devuelve el progreso resultante.
+///
+/// Lo que no se manda no se toca: la interfaz cambia una cosa cada vez y no tiene por qué
+/// reenviar el resto para no borrarlo sin querer.
+///
+/// # Errors
+///
+/// Falla si no se puede leer o escribir el progreso.
+#[tauri::command]
+pub fn practice_set(
+    state: tauri::State<'_, AppState>,
+    slug: String,
+    status: Option<crate::practice::Status>,
+    tempo_bpm: Option<f32>,
+    target_bpm: Option<f32>,
+) -> Result<crate::practice::Practice, SessionError> {
+    let root = state.root_path()?;
+    let mut practice = crate::practice::load(&root, &slug)
+        .map_err(|error| SessionError::Edit(error.to_string()))?;
+
+    if let Some(status) = status {
+        practice.status = status;
+    }
+    if let Some(tempo) = tempo_bpm {
+        practice.tempo_bpm = tempo.max(0.0);
+    }
+    if let Some(target) = target_bpm {
+        practice.target_bpm = target.max(0.0);
+    }
+
+    crate::practice::save(&root, &slug, &practice)
+        .map_err(|error| SessionError::Edit(error.to_string()))?;
+    Ok(practice)
+}
+
+/// Marca o desmarca un compás como atragantado.
+///
+/// # Errors
+///
+/// Falla si no se puede leer o escribir el progreso.
+#[tauri::command]
+pub fn practice_toggle_bar(
+    state: tauri::State<'_, AppState>,
+    slug: String,
+    bar: u32,
+) -> Result<crate::practice::Practice, SessionError> {
+    let root = state.root_path()?;
+    let mut practice = crate::practice::load(&root, &slug)
+        .map_err(|error| SessionError::Edit(error.to_string()))?;
+    practice.toggle_bar(bar);
+    crate::practice::save(&root, &slug, &practice)
+        .map_err(|error| SessionError::Edit(error.to_string()))?;
+    Ok(practice)
+}
+
+/// Devuelve el progreso de todas las canciones que tengan alguno.
+///
+/// # Errors
+///
+/// Falla si no se puede leer la carpeta de progreso.
+#[tauri::command]
+pub fn practice_all(
+    state: tauri::State<'_, AppState>,
+) -> Result<Vec<crate::practice::PracticeEntry>, SessionError> {
+    let root = state.root_path()?;
+    crate::practice::load_all(&root).map_err(|error| SessionError::Edit(error.to_string()))
+}
+
 /// Cambia el instrumento de la pista.
 ///
 /// El número es el programa General MIDI: 24 nylon, 25 acústica metálica, 26 eléctrica

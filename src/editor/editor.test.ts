@@ -7,6 +7,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { emptyPractice, type Practice, tempoLabel, tempoRatio } from '../library/practice';
 import { filterSongs, fold, type SongCard } from '../library/search';
 import { extractVideoId } from '../player/youtube';
 import {
@@ -308,6 +309,37 @@ describe('buscar en el repertorio', () => {
 
   it('lo que no está no aparece', () => {
     assert.equal(filterSongs(repertoire, 'jazz').length, 0);
+  });
+});
+
+describe('progreso de una canción', () => {
+  const practice = (tempo: number, target: number): Practice => ({
+    ...emptyPractice(),
+    tempo_bpm: tempo,
+    target_bpm: target,
+  });
+
+  it('sin objetivo propio, el objetivo es la grabación', () => {
+    assert.equal(tempoLabel(practice(60, 0), 120), '60 de 120 BPM · 50 %');
+  });
+
+  it('un objetivo propio manda sobre el de la grabación', () => {
+    // Una pieza se puede querer tocar más despacio de como está grabada.
+    assert.equal(tempoLabel(practice(60, 80), 120), '60 de 80 BPM · 75 %');
+  });
+
+  it('sin medir no se inventa un número', () => {
+    assert.equal(tempoLabel(practice(0, 90), 120), 'sin medir · 90 BPM');
+    assert.equal(tempoRatio(practice(0, 90), 120), 0);
+  });
+
+  it('pasarse del objetivo no da más del cien por cien', () => {
+    assert.equal(tempoRatio(practice(150, 100), 100), 1);
+  });
+
+  it('una canción sin ensayar empieza sacándose', () => {
+    assert.equal(emptyPractice().status, 'sacando');
+    assert.deepEqual(emptyPractice().tricky_bars, []);
   });
 });
 

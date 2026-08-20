@@ -39,7 +39,8 @@ export type Intent =
   | { type: 'redo' }
   | { type: 'play' }
   | { type: 'loopBar' }
-  | { type: 'toggleMetronome' };
+  | { type: 'toggleMetronome' }
+  | { type: 'toggleTricky' };
 
 /** Letras que activan técnicas. */
 const TECHNIQUE_KEYS: Record<string, number> = {
@@ -140,6 +141,10 @@ export function interpret(event: KeyboardEvent): Intent | null {
 
   if (event.key.toLowerCase() === 'm') {
     return { type: 'toggleMetronome' };
+  }
+
+  if (event.key.toLowerCase() === 't') {
+    return { type: 'toggleTricky' };
   }
 
   const technique = TECHNIQUE_KEYS[event.key.toLowerCase()];

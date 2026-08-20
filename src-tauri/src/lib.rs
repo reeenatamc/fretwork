@@ -4,6 +4,7 @@
 //! que el arnés de diagnóstico deje sus resultados en disco. Escribir el informe
 //! permite comprobar la build empaquetada sin depender de mirar la ventana.
 
+pub mod practice;
 pub mod session;
 pub mod storage;
 
@@ -139,6 +140,11 @@ pub fn run() {
             session::session_difficulty,
             session::session_set_instrument,
             session::session_set_tags,
+            session::session_slug,
+            session::practice_get,
+            session::practice_set,
+            session::practice_toggle_bar,
+            session::practice_all,
             session::list_soundfonts,
             session::read_soundfont,
         ])

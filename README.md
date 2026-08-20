@@ -55,6 +55,8 @@ they never collide with note entry.
 | `Enter` | play the score from the bar you are on |
 | ⇧+`Enter` | loop that bar until you press it again |
 | `M` | metronome |
+| `T` | mark this bar as one that trips you up |
+| `Ctrl`+`O` / `Ctrl`+`P` | open the repertoire / print the sheet |
 | click on the neck | writes that note; the same fret again removes it |
 | `F1`–`F4` | video: play, back 3s, half speed, A-B loop |
 
@@ -75,7 +77,7 @@ save.
 | M0 | Tauri + alphaTab + YouTube spike | done |
 | M1 | Data model and serialisation | done |
 | M2 | Fast capture | done |
-| M3 | Repertoire, progress and printing | pending |
+| M3 | Repertoire, progress and printing | done |
 | M4 | Difficulty scoring | pending |
 | M5 | Transformation engine | pending |
 | M6 | AI assistance (optional, off by default) | pending |
@@ -85,11 +87,15 @@ save.
 
 Rust and Tauri v2 for the core and the desktop window. TypeScript and
 [alphaTab](https://alphatab.net) for score rendering, the synthesiser and
-printing. Local SQLite for the index and practice data.
+printing.
 
 Tabs are stored as versioned JSON files in the repository itself, so there is a
 backup, a history of how each arrangement evolved, and publishing one is just a
 push.
+
+Practice data — how fast each song comes out today, which bars keep tripping you
+up — sits in local JSON files that are never committed. The tab is what you
+publish; how you are getting on with it is yours.
 
 ## Licence
 MIT

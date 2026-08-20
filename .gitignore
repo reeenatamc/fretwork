@@ -31,6 +31,9 @@ Thumbs.db
 # La autocomprobación deja aquí una canción de prueba; no es una tablatura de verdad.
 songs/prueba-de-guardado.json
 
+# El progreso es de quien toca, no de la tablatura: se queda en local y no se publica.
+practice/
+
 # Los bancos de sonido se dejan aquí pero no se versionan: pesan decenas de megas y
 # tienen licencias ajenas. La carpeta sí se conserva.
 soundfonts/*

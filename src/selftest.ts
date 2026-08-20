@@ -49,9 +49,12 @@ async function type(editor: Editor, sequence: string): Promise<void> {
  * lo dispara no recibe su promesa. Esperar un rato fijo daría una prueba que pasa o falla
  * según lo cargada que esté la máquina, así que se espera a la condición y punto.
  */
-async function until(condition: () => boolean, timeoutMs = 3000): Promise<boolean> {
+async function until(
+  condition: () => boolean | Promise<boolean>,
+  timeoutMs = 3000,
+): Promise<boolean> {
   const start = Date.now();
-  while (!condition()) {
+  while (!(await condition())) {
     if (Date.now() - start > timeoutMs) return false;
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
@@ -265,6 +268,36 @@ export async function runSelfTest(
       } · lista: ${document.getElementById('repertoire')?.textContent?.slice(0, 80) ?? 'sin lista'}`,
     );
     document.getElementById('library-close')?.click();
+
+    // ── Progreso ─────────────────────────────────────────────────────────
+    // La tecla marca el compás donde está el cursor, y lo marcado tiene que sobrevivir a
+    // cerrar la aplicación: si no, no sirve para decidir qué se ensaya mañana.
+    const trickyBar = editor.currentCursor().bar;
+    await press(editor, 't');
+    const marked = await until(async () => {
+      const practice = await invoke<{ tricky_bars: number[] }>('practice_get', { slug });
+      return practice.tricky_bars.includes(trickyBar);
+    });
+    check(
+      'marcar un compás que se atraganta',
+      marked,
+      `compás ${trickyBar + 1} anotado en practice/${slug}.json`,
+    );
+
+    await press(editor, 't');
+    const unmarked = await until(async () => {
+      const practice = await invoke<{ tricky_bars: number[] }>('practice_get', { slug });
+      return !practice.tricky_bars.includes(trickyBar);
+    });
+    check('la misma tecla lo desmarca', unmarked, 'el compás dejó de estar marcado');
+
+    await invoke('practice_set', { slug, status: 'ensayando', tempoBpm: 72, targetBpm: 96 });
+    const saved = await invoke<{ status: string; tempo_bpm: number }>('practice_get', { slug });
+    check(
+      'cómo va la canción',
+      saved.status === 'ensayando' && Math.round(saved.tempo_bpm) === 72,
+      `${saved.status}, sale a ${saved.tempo_bpm} de 96 BPM`,
+    );
 
     // ── Transcribir una pieza entera ─────────────────────────────────────
     // La prueba que los tests unitarios no hacen: ¿aguanta una canción completa?
