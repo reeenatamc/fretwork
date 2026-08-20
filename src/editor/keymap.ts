@@ -54,12 +54,31 @@ const TECHNIQUE_KEYS: Record<string, number> = {
 };
 
 /**
+ * Si la tecla la está recibiendo un campo de texto.
+ *
+ * Escribir notas y escribir el título comparten teclado, y el editor mira las teclas de
+ * toda la ventana. Sin esta comprobación, teclear el título se lleva por delante las
+ * letras —«h» es un ligado— y los dígitos acaban de trastes en la partitura.
+ */
+export function isFormField(target: EventTarget | null): boolean {
+  const element = target as HTMLElement | null;
+  if (!element?.tagName) return false;
+  const tag = element.tagName.toUpperCase();
+  return (
+    tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || element.isContentEditable === true
+  );
+}
+
+/**
  * Interpreta un evento de teclado.
  *
  * Devuelve `null` si la tecla no significa nada aquí, para que el evento siga su curso
  * normal y no se rompan cosas como los atajos del sistema.
  */
 export function interpret(event: KeyboardEvent): Intent | null {
+  // Lo que se teclea en un campo es del campo, no de la partitura.
+  if (isFormField(event.target)) return null;
+
   const ctrl = event.ctrlKey || event.metaKey;
 
   if (ctrl) {

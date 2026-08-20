@@ -6,6 +6,7 @@
  * empaquetada sin depender de que alguien mire la ventana.
  */
 import { Editor } from './editor/editor';
+import { isFormField } from './editor/keymap';
 import { extractVideoId, YouTubePlayer } from './player/youtube';
 import { runSelfTest } from './selftest';
 
@@ -286,7 +287,13 @@ async function main(): Promise<void> {
     return;
   }
 
-  editor = new Editor($('score'), $('grid'), $('status'));
+  // Con un panel abierto el teclado es del panel, no de la partitura.
+  editor = new Editor(
+    $('score'),
+    $('grid'),
+    $('status'),
+    () => !$('help').hidden || !$('panel').hidden,
+  );
   await editor.start('Sin título', 16, 90);
 
   $('save').addEventListener('click', () => void save());
@@ -358,7 +365,9 @@ async function main(): Promise<void> {
       return;
     }
 
-    if (event.key === '?') {
+    // La ayuda se abre con «?», pero un interrogante escrito en el título es un
+    // interrogante y no un atajo.
+    if (event.key === '?' && !isFormField(event.target)) {
       event.preventDefault();
       toggleHelp();
       return;
@@ -366,6 +375,8 @@ async function main(): Promise<void> {
     if (event.key === 'Escape') {
       toggleHelp(false);
       $('panel').hidden = true;
+      // Salir de un campo devuelve el teclado a la partitura, que es donde se escribe.
+      if (isFormField(event.target)) (event.target as HTMLElement).blur();
       return;
     }
 

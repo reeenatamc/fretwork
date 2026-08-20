@@ -108,10 +108,16 @@ export class Editor {
   /** Si el metrónomo está sonando. */
   private metronome = false;
 
+  /**
+   * @param isSuspended Si el teclado es de otro (un panel abierto, por ejemplo). Se recibe
+   *   como función para que el editor no tenga que saber qué paneles existen: con la ayuda
+   *   abierta, teclear escribía notas a ciegas detrás del panel.
+   */
   constructor(
     private readonly scoreHost: HTMLElement,
     private readonly gridHost: HTMLElement,
     private readonly statusHost: HTMLElement,
+    private readonly isSuspended: () => boolean = () => false,
   ) {}
 
   /** Arranca el editor con una partitura nueva. */
@@ -320,6 +326,8 @@ export class Editor {
 
   /** Procesa una tecla. Público para que la autocomprobación pueda simular pulsaciones. */
   async onKey(event: KeyboardEvent): Promise<void> {
+    if (this.isSuspended()) return;
+
     const intent = interpret(event);
     if (!intent) return;
     event.preventDefault();

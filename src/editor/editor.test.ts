@@ -17,7 +17,7 @@ import {
   moveToBeat,
   toAddr,
 } from './cursor';
-import { DURATIONS, FretAccumulator, interpret, stepDuration } from './keymap';
+import { DURATIONS, FretAccumulator, interpret, isFormField, stepDuration } from './keymap';
 
 /** Compases de 4 pulsos y guitarra de 6 cuerdas. */
 const bounds: CursorBounds = {
@@ -144,6 +144,28 @@ describe('mapeo de teclas', () => {
     // Devolver null es lo que impide romper atajos del sistema.
     assert.equal(interpret(key({ key: 'F5' })), null);
     assert.equal(interpret(key({ key: 'q', altKey: true })), null);
+  });
+});
+
+describe('teclas que no son del editor', () => {
+  it('lo que se teclea en un campo se queda en el campo', () => {
+    // Escribir el título llevaba las letras a la partitura: «h» ponía un ligado y los
+    // dígitos, trastes.
+    const input = { tagName: 'INPUT' } as unknown as EventTarget;
+    assert.equal(interpret(key({ key: 'h', target: input })), null);
+    assert.equal(interpret(key({ key: '3', target: input })), null);
+    assert.equal(interpret(key({ key: 'ArrowUp', target: input })), null);
+  });
+
+  it('un campo se reconoce por su etiqueta o por ser editable', () => {
+    assert.equal(isFormField({ tagName: 'TEXTAREA' } as unknown as EventTarget), true);
+    assert.equal(isFormField({ tagName: 'SELECT' } as unknown as EventTarget), true);
+    assert.equal(
+      isFormField({ tagName: 'DIV', isContentEditable: true } as unknown as EventTarget),
+      true,
+    );
+    assert.equal(isFormField({ tagName: 'DIV' } as unknown as EventTarget), false);
+    assert.equal(isFormField(null), false);
   });
 });
 
