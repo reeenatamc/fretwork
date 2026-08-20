@@ -8,6 +8,7 @@
 import { Editor } from './editor/editor';
 import { isFormField } from './editor/keymap';
 import { extractVideoId, YouTubePlayer } from './player/youtube';
+import { printTex } from './print/print';
 import { runSelfTest } from './selftest';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -110,6 +111,22 @@ async function applySoundFont(name: string): Promise<void> {
     const bytes = await invoke<number[]>('read_soundfont', { name });
     editor.loadSoundFont(new Uint8Array(bytes));
     notify(`sonido: ${name}`);
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
+  }
+}
+
+/**
+ * Prepara la hoja para el atril y abre el diálogo de impresión.
+ *
+ * La partitura que se imprime es la de la sesión, no la última guardada: se imprime para
+ * tocar lo que se acaba de escribir.
+ */
+async function printSheet(): Promise<void> {
+  notify('preparando la hoja…');
+  try {
+    const { pages } = await printTex(editor.currentTex());
+    notify(`hoja de ${pages} página${pages === 1 ? '' : 's'}`);
   } catch (error) {
     notify(`⚠ ${formatError(error)}`);
   }
@@ -362,6 +379,12 @@ async function main(): Promise<void> {
       if (event.key.toLowerCase() === 's') {
         event.preventDefault();
         void save();
+      }
+      if (event.key.toLowerCase() === 'p') {
+        // El diálogo del sistema se lleva el teclado, así que esto tiene que ir antes de
+        // que el navegador imprima por su cuenta: lo suyo sería la ventana entera.
+        event.preventDefault();
+        void printSheet();
       }
       return;
     }

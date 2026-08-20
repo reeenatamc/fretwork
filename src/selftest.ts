@@ -8,6 +8,7 @@
  */
 import { PIECE_BARS, PIECE_NOTES, typePiece } from './demo-song';
 import type { Editor } from './editor/editor';
+import { printTex } from './print/print';
 
 interface Check {
   name: string;
@@ -190,6 +191,20 @@ export async function runSelfTest(
       removed,
       removed ? 'el segundo clic la borró' : `sigue ahí: ${excerpt(editor.currentTex())}`,
     );
+
+    // ── Impresión ────────────────────────────────────────────────────────
+    // Sin el diálogo del sistema, que bloquearía el webview. Lo que puede fallar de
+    // verdad es lo otro: que la partitura entera se renderice fuera de la pantalla.
+    try {
+      const sheet = await printTex(editor.currentTex(), { dryRun: true });
+      check(
+        'hoja para el atril',
+        sheet.pages >= 1,
+        `${sheet.pages} página(s) en ${sheet.renderMs} ms`,
+      );
+    } catch (error) {
+      check('hoja para el atril', false, String(error));
+    }
 
     // ── Guardar en disco ─────────────────────────────────────────────────
     // Es lo que impide perder una transcripción al cerrar la aplicación.
