@@ -1,0 +1,16 @@
+# Los archivos de texto viven con saltos de línea Unix, dentro y fuera del repositorio.
+#
+# Sin esto, en Windows el checkout los devuelve con CRLF y `npm run check` falla al
+# comprobar el formato: un problema del entorno disfrazado de problema del código.
+* text=auto eol=lf
+
+# Binarios: que git no toque ni un byte.
+*.sf2 binary
+*.sf3 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.png binary
+*.jpg binary
+*.ico binary
