@@ -50,6 +50,10 @@ pub struct SongEntry {
     pub artist: Option<String>,
     /// Número de compases.
     pub bar_count: u32,
+    /// Etiquetas de la canción.
+    pub tags: Vec<String>,
+    /// Tempo de la grabación original.
+    pub tempo_bpm: f32,
 }
 
 /// Convierte un título en un nombre de archivo seguro y legible.
@@ -200,6 +204,8 @@ pub fn list(root: &Path) -> Result<Vec<SongEntry>, StorageError> {
             title: score.meta.title.clone(),
             artist: score.meta.artist.clone(),
             bar_count: score.bar_count(),
+            tags: score.meta.tags.clone(),
+            tempo_bpm: score.meta.tempo_bpm,
         });
     }
 

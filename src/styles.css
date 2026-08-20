@@ -708,3 +708,103 @@ kbd {
 .fret-mark.double {
   color: var(--amber-deep);
 }
+
+/* ── Repertorio ─────────────────────────────────────────────────────────── */
+
+.search {
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/*
+ * La lista de canciones.
+ *
+ * Cada canción es un botón de una sola línea: en el repertorio se viene a abrir algo, no
+ * a leerlo. El título manda, el resto acompaña sin competir.
+ */
+.repertoire {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.repertoire .empty {
+  padding: 14px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.song {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 3fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.song:hover {
+  background: var(--surface);
+}
+
+.song-title {
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-artist,
+.song-bars {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-bars {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.song-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--sage);
+  color: var(--sage-deep);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tag-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.tag-editor label {
+  color: var(--ink-soft);
+  font-size: 12px;
+}

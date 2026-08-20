@@ -232,6 +232,40 @@ export async function runSelfTest(
       reopened.tex.includes('12.1') ? 'las notas sobrevivieron al viaje' : 'se perdió algo',
     );
 
+    // ── Repertorio ───────────────────────────────────────────────────────
+    // Las etiquetas se escriben a mano y llegan como sea; lo que se guarda tiene que
+    // quedar limpio, o el repertorio acaba con «Blues» y «blues» como dos cosas.
+    await invoke('session_set_tags', { tags: ['  Prueba ', 'prueba', '', 'Automática'] });
+    await invoke('session_save');
+    const tagged = await invoke<{ slug: string; tags: string[] }[]>('session_list');
+    const entry = tagged.find((song) => song.slug === slug);
+    check(
+      'etiquetas limpias en el repertorio',
+      entry?.tags.join(',') === 'prueba,automática',
+      `quedaron: ${entry?.tags.join(', ') ?? 'ninguna'}`,
+    );
+
+    // El panel se abre y busca de verdad, con el DOM de por medio.
+    document.getElementById('library-open')?.click();
+    const shown = await until(
+      () => document.querySelectorAll('#repertoire [data-slug]').length > 0,
+      8000,
+    );
+    const search = document.getElementById('library-search') as HTMLInputElement | null;
+    if (search) {
+      search.value = 'automatica';
+      search.dispatchEvent(new Event('input'));
+    }
+    const filtered = document.querySelectorAll('#repertoire [data-slug]').length;
+    check(
+      'buscar en el repertorio',
+      shown && filtered >= 1,
+      `${filtered} canción(es) con «automatica» · panel: ${
+        document.getElementById('library')?.hidden ? 'cerrado' : 'abierto'
+      } · lista: ${document.getElementById('repertoire')?.textContent?.slice(0, 80) ?? 'sin lista'}`,
+    );
+    document.getElementById('library-close')?.click();
+
     // ── Transcribir una pieza entera ─────────────────────────────────────
     // La prueba que los tests unitarios no hacen: ¿aguanta una canción completa?
     await invoke('session_new', {

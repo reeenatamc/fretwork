@@ -370,6 +370,22 @@ pub fn session_set_meta(
     })
 }
 
+/// Pone las etiquetas de la canción abierta.
+///
+/// # Errors
+///
+/// Falla si no hay sesión abierta.
+#[tauri::command]
+pub fn session_set_tags(
+    state: tauri::State<'_, AppState>,
+    tags: Vec<String>,
+) -> Result<SessionView, SessionError> {
+    state.with_session(|session| {
+        session.score.meta.tags = tabs_core::model::normalize_tags(tags);
+        Ok(session.view())
+    })
+}
+
 /// Cambia el instrumento de la pista.
 ///
 /// El número es el programa General MIDI: 24 nylon, 25 acústica metálica, 26 eléctrica

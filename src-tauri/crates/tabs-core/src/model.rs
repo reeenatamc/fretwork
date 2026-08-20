@@ -251,6 +251,29 @@ pub struct ScoreMeta {
     pub source_url: Option<String>,
     /// Pulsaciones por minuto de la grabación original.
     pub tempo_bpm: f32,
+    /// Etiquetas para encontrarla en el repertorio: estilo, técnica, para quién es.
+    ///
+    /// Viven con la canción y no en un índice aparte: al publicar la tablatura, la
+    /// etiqueta va con ella y sigue significando lo mismo en otro ordenador.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+}
+
+/// Limpia una lista de etiquetas: sin espacios de sobra, en minúsculas y sin repetidas.
+///
+/// Las etiquetas se escriben a mano, y a mano se escriben mal: «Fingerstyle», «fingerstyle»
+/// y « fingerstyle » son la misma etiqueta y en el repertorio tienen que caer juntas.
+#[must_use]
+pub fn normalize_tags(tags: impl IntoIterator<Item = String>) -> Vec<String> {
+    let mut clean: Vec<String> = Vec::new();
+    for tag in tags {
+        let tag = tag.trim().to_lowercase();
+        if tag.is_empty() || clean.contains(&tag) {
+            continue;
+        }
+        clean.push(tag);
+    }
+    clean
 }
 
 // ─────────────────────────────────────────────────────────── Compás maestro
@@ -937,6 +960,23 @@ fn gcd(a: u64, b: u64) -> u64 {
         a
     } else {
         gcd(b, a % b)
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod tag_tests {
+    use super::normalize_tags;
+
+    #[test]
+    fn las_etiquetas_se_limpian_antes_de_guardarse() {
+        let tags =
+            normalize_tags(["  Fingerstyle ", "fingerstyle", "", "   ", "Blues"].map(String::from));
+        assert_eq!(
+            tags,
+            vec!["fingerstyle", "blues"],
+            "sin repetidas ni vacías"
+        );
     }
 }
 

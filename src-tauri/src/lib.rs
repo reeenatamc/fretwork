@@ -138,6 +138,7 @@ pub fn run() {
             session::session_discard_harder,
             session::session_difficulty,
             session::session_set_instrument,
+            session::session_set_tags,
             session::list_soundfonts,
             session::read_soundfont,
         ])

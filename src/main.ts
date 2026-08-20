@@ -7,18 +7,12 @@
  */
 import { Editor } from './editor/editor';
 import { isFormField } from './editor/keymap';
+import { filterSongs, type SongCard } from './library/search';
 import { extractVideoId, YouTubePlayer } from './player/youtube';
 import { printTex } from './print/print';
 import { runSelfTest } from './selftest';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-
-interface SongEntry {
-  slug: string;
-  title: string;
-  artist: string | null;
-  bar_count: number;
-}
 
 async function invoke<T>(command: string, args: Record<string, unknown> = {}): Promise<T> {
   const { invoke: tauriInvoke } = await import('@tauri-apps/api/core');
@@ -59,22 +53,98 @@ async function save(): Promise<void> {
   }
 }
 
+/** Todo el repertorio, tal y como lo devolvió Rust la última vez. */
+let repertoire: SongCard[] = [];
+
 async function refreshLibrary(): Promise<void> {
   try {
-    const songs = await invoke<SongEntry[]>('session_list');
-    const select = $<HTMLSelectElement>('library');
-    const current = select.value;
-    select.innerHTML =
-      '<option value="">— abrir —</option>' +
-      songs
-        .map(
-          (song) =>
-            `<option value="${song.slug}">${song.title}${song.artist ? ` — ${song.artist}` : ''}</option>`,
-        )
-        .join('');
-    select.value = current;
+    repertoire = await invoke<SongCard[]>('session_list');
+    renderRepertoire();
   } catch {
     // Si el listado falla no pasa nada grave: se sigue pudiendo escribir y guardar.
+  }
+}
+
+/** Pinta el repertorio filtrado por lo que se haya escrito en el buscador. */
+function renderRepertoire(): void {
+  const query = $<HTMLInputElement>('library-search').value;
+  const found = filterSongs(repertoire, query);
+
+  if (found.length === 0) {
+    $('repertoire').innerHTML = repertoire.length
+      ? '<li class="empty">Nada con eso.</li>'
+      : '<li class="empty">Todavía no has guardado ninguna canción.</li>';
+    return;
+  }
+
+  $('repertoire').innerHTML = found
+    .map((song) => {
+      const tags = song.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+      return (
+        `<li><button type="button" class="song" data-slug="${song.slug}">` +
+        `<span class="song-title">${escapeHtml(song.title)}</span>` +
+        `<span class="song-artist">${escapeHtml(song.artist ?? '')}</span>` +
+        `<span class="song-tags">${tags}</span>` +
+        `<span class="song-bars">${song.bar_count} compases</span>` +
+        '</button></li>'
+      );
+    })
+    .join('');
+}
+
+/**
+ * Escapa lo que escribió una persona antes de meterlo en la página.
+ *
+ * Un título con un «&» o un «<» no debería poder romper el repertorio, y menos aún
+ * ejecutarse.
+ */
+function escapeHtml(text: string): string {
+  return text.replace(
+    /[&<>"']/g,
+    (char) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char,
+  );
+}
+
+/** Abre una canción del repertorio y cierra el panel. */
+async function openSong(slug: string): Promise<void> {
+  try {
+    await invoke('session_open', { slug });
+    await editor.reload();
+    showMetaOf(slug);
+    $('library').hidden = true;
+    notify(`abierto ${slug}`);
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
+  }
+}
+
+/**
+ * Lleva a la barra superior los datos de la canción recién abierta.
+ *
+ * Sin esto, los campos seguían enseñando la canción anterior y el siguiente guardado la
+ * escribía con aquel título: abrir una canción y guardarla la convertía en otra.
+ */
+function showMetaOf(slug: string): void {
+  const song = repertoire.find((entry) => entry.slug === slug);
+  if (!song) return;
+  $<HTMLInputElement>('title').value = song.title;
+  $<HTMLInputElement>('artist').value = song.artist ?? '';
+  $<HTMLInputElement>('bpm').value = String(Math.round(song.tempo_bpm));
+  $<HTMLInputElement>('library-tags').value = song.tags.join(', ');
+}
+
+/** Guarda las etiquetas de la canción abierta. */
+async function applyTags(): Promise<void> {
+  const tags = $<HTMLInputElement>('library-tags')
+    .value.split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  try {
+    await invoke('session_set_tags', { tags });
+    notify(tags.length ? `etiquetas: ${tags.join(', ')}` : 'sin etiquetas');
+  } catch (error) {
+    notify(`⚠ ${formatError(error)}`);
   }
 }
 
@@ -304,28 +374,34 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Con un panel abierto el teclado es del panel, no de la partitura.
-  editor = new Editor(
-    $('score'),
-    $('grid'),
-    $('status'),
-    $('fretboard'),
-    () => !$('help').hidden || !$('panel').hidden,
+  // Con un panel abierto el teclado es del panel, no de la partitura. Se pregunta por
+  // los paneles que haya, no por una lista escrita a mano que se olvida de actualizar.
+  editor = new Editor($('score'), $('grid'), $('status'), $('fretboard'), () =>
+    Array.from(document.querySelectorAll<HTMLElement>('.panel')).some((panel) => !panel.hidden),
   );
   await editor.start('Sin título', 16, 90);
 
   $('save').addEventListener('click', () => void save());
-  $('library').addEventListener('change', async (event) => {
-    const slug = (event.target as HTMLSelectElement).value;
-    if (!slug) return;
-    try {
-      await invoke('session_open', { slug });
-      await editor.reload();
-      notify(`abierto ${slug}`);
-    } catch (error) {
-      notify(`⚠ ${formatError(error)}`);
-    }
+  const library = $('library');
+  const openLibrary = async (show: boolean) => {
+    library.hidden = !show;
+    if (!show) return;
+    await refreshLibrary();
+    $<HTMLInputElement>('library-search').focus();
+    $<HTMLInputElement>('library-search').select();
+  };
+
+  $('library-open').addEventListener('click', () => void openLibrary(true));
+  $('library-close').addEventListener('click', () => void openLibrary(false));
+  library.addEventListener('click', (event) => {
+    if (event.target === library) void openLibrary(false);
   });
+  $('library-search').addEventListener('input', renderRepertoire);
+  $('repertoire').addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>('[data-slug]');
+    if (button?.dataset.slug) void openSong(button.dataset.slug);
+  });
+  $('library-tags').addEventListener('change', () => void applyTags());
 
   $('yt-load').addEventListener('click', () => void loadVideo());
   $('yt-play').addEventListener('click', () => player?.toggle());
@@ -380,6 +456,10 @@ async function main(): Promise<void> {
         event.preventDefault();
         void save();
       }
+      if (event.key.toLowerCase() === 'o') {
+        event.preventDefault();
+        void openLibrary($('library').hidden);
+      }
       if (event.key.toLowerCase() === 'p') {
         // El diálogo del sistema se lleva el teclado, así que esto tiene que ir antes de
         // que el navegador imprima por su cuenta: lo suyo sería la ventana entera.
@@ -399,6 +479,7 @@ async function main(): Promise<void> {
     if (event.key === 'Escape') {
       toggleHelp(false);
       $('panel').hidden = true;
+      library.hidden = true;
       // Salir de un campo devuelve el teclado a la partitura, que es donde se escribe.
       if (isFormField(event.target)) (event.target as HTMLElement).blur();
       return;

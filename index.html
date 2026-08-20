@@ -23,7 +23,7 @@
           <option value="29">Saturada</option>
         </select>
         <select id="soundfont" title="Banco de sonidos" hidden></select>
-        <select id="library"><option value="">Abrir…</option></select>
+        <button id="library-open" title="Repertorio (Ctrl+O)">Repertorio</button>
         <button id="help-open" title="Atajos de teclado (?)">Atajos</button>
         <span id="saved" class="saved"></span>
       </div>
@@ -138,6 +138,7 @@
               <dt><kbd>Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>Z</kbd></dt><dd>rehacer</dd>
               <dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>guardar</dd>
               <dt><kbd>Ctrl</kbd>+<kbd>P</kbd></dt><dd>imprimir la hoja para el atril</dd>
+              <dt><kbd>Ctrl</kbd>+<kbd>O</kbd></dt><dd>abrir el repertorio</dd>
               <dt><kbd>?</kbd></dt><dd>abrir o cerrar esta ayuda</dd>
             </dl>
           </section>
@@ -145,6 +146,39 @@
 
         <div class="panel-actions">
           <button id="help-close" class="primary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="library" class="panel" hidden>
+      <div class="panel-card wide">
+        <h2>Repertorio</h2>
+        <p class="lead">
+          Todo lo que has sacado. Busca por lo que recuerdes: un trozo del título, el
+          grupo o una etiqueta.
+        </p>
+
+        <input
+          id="library-search"
+          class="search"
+          placeholder="buscar por título, artista o etiqueta"
+          spellcheck="false"
+        />
+
+        <ul class="repertoire" id="repertoire"></ul>
+
+        <div class="tag-editor">
+          <label for="library-tags">Etiquetas de la canción abierta</label>
+          <input
+            id="library-tags"
+            class="search"
+            placeholder="fingerstyle, blues, para el domingo"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="panel-actions">
+          <button id="library-close" class="primary">Cerrar</button>
         </div>
       </div>
     </div>

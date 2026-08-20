@@ -7,6 +7,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { filterSongs, fold, type SongCard } from '../library/search';
 import { extractVideoId } from '../player/youtube';
 import {
   type CursorBounds,
@@ -255,6 +256,58 @@ describe('diapasón', () => {
     assert.equal(inlayAt(9), 'single');
     assert.equal(inlayAt(12), 'double');
     assert.equal(inlayAt(4), 'none');
+  });
+});
+
+describe('buscar en el repertorio', () => {
+  const song = (title: string, artist: string | null, tags: string[]): SongCard => ({
+    slug: title.toLowerCase().replace(/ /g, '-'),
+    title,
+    artist,
+    bar_count: 32,
+    tags,
+    tempo_bpm: 90,
+  });
+
+  const repertoire = [
+    song('Blackbird', 'The Beatles', ['fingerstyle']),
+    song('Mi corazón', 'Violeta Parra', ['folclore', 'para el domingo']),
+    song('Little Wing', 'Jimi Hendrix', ['blues', 'eléctrica']),
+  ];
+
+  it('sin nada escrito está el repertorio entero', () => {
+    assert.equal(filterSongs(repertoire, '').length, 3);
+    assert.equal(filterSongs(repertoire, '   ').length, 3);
+  });
+
+  it('busca por título, por artista y por etiqueta', () => {
+    assert.deepEqual(
+      filterSongs(repertoire, 'beatles').map((s) => s.title),
+      ['Blackbird'],
+    );
+    assert.deepEqual(
+      filterSongs(repertoire, 'blues').map((s) => s.title),
+      ['Little Wing'],
+    );
+    assert.deepEqual(
+      filterSongs(repertoire, 'wing').map((s) => s.title),
+      ['Little Wing'],
+    );
+  });
+
+  it('los acentos se escriben al guardar y se olvidan al buscar', () => {
+    assert.equal(filterSongs(repertoire, 'corazon').length, 1);
+    assert.equal(filterSongs(repertoire, 'ELECTRICA').length, 1);
+    assert.equal(fold('Mi Corazón'), 'mi corazon');
+  });
+
+  it('con varias palabras tienen que aparecer todas', () => {
+    assert.equal(filterSongs(repertoire, 'beatles fingerstyle').length, 1);
+    assert.equal(filterSongs(repertoire, 'beatles blues').length, 0);
+  });
+
+  it('lo que no está no aparece', () => {
+    assert.equal(filterSongs(repertoire, 'jazz').length, 0);
   });
 });
 
